@@ -1,0 +1,278 @@
+# 🩺 CarePoint — Doctor Appointment Booking Platform
+
+A full-stack telemedicine appointment booking platform built with the MERN stack. Patients can search for doctors, book appointments based on real-time availability, pay online, chat with their doctor, and access prescriptions — all in one place. Doctors manage their schedules and consultations, while admins verify doctors and oversee the platform.
+
+---
+
+## 📌 Overview
+
+CarePoint connects **Patients**, **Doctors**, and **Admins** through a role-based platform:
+
+- **Patients** search doctors by specialization, book available time slots, pay securely, chat with their doctor, and keep a running medical history.
+- **Doctors** set their weekly availability, manage incoming appointments, consult via chat/video, and issue digital prescriptions.
+- **Admins** verify doctor credentials before they go live, moderate users, resolve disputes, and monitor platform analytics.
+
+This project was built to demonstrate real-world full-stack engineering: role-based access control, race-condition-safe booking logic, state-machine-driven workflows, real-time communication, and payment processing — not just CRUD operations.
+
+---
+
+## ✨ Key Features
+
+- 🔐 **Role-based authentication** (Patient / Doctor / Admin) with JWT
+- ✅ **Doctor verification workflow** — doctors can't go live until admin-approved
+- 📅 **Dynamic slot generation** — availability is computed on-demand from recurring weekly rules + exceptions (leave days), not pre-stored in the database
+- 🔒 **Race-condition-safe booking** — a database-level partial unique index prevents two patients from ever double-booking the same slot
+- 🔁 **Appointment state machine** — `pending → confirmed → completed / cancelled / no_show`
+- 💳 **Stripe payment integration** with refund handling on valid cancellations
+- 💬 **Real-time chat** between patient and doctor (Socket.io)
+- 📹 **Video consultation** link generation
+- 📄 **Digital prescriptions** tied to each appointment, visible in patient medical history
+- ⭐ **Ratings & reviews** with denormalized aggregate scores on doctor profiles
+- 🔔 **Notifications** (in-app + email) including automated appointment reminders via cron jobs
+- 📊 **Admin analytics dashboard** — revenue, appointment volume, top specializations, doctor performance
+
+---
+
+## 🛠️ Tech Stack
+
+| Layer | Technology |
+|---|---|
+| Frontend | React (Vite), Redux Toolkit / Zustand, Tailwind CSS |
+| Backend | Node.js, Express.js |
+| Database | MongoDB, Mongoose |
+| Real-time | Socket.io |
+| Payments | Stripe |
+| File Storage | Cloudinary |
+| Auth | JWT, bcrypt |
+| Scheduled Jobs | node-cron |
+| Deployment | Vercel (frontend/admin), Render/Railway (backend), MongoDB Atlas |
+
+---
+
+## 🏗️ Architecture
+
+The project is split into three independent applications:
+
+```
+doctor-appointment-platform/
+├── frontend/   # Unified Patient + Doctor web app (role-based rendering)
+├── admin/      # Separate admin panel (verification queue, analytics)
+└── backend/    # Single Express API serving all three roles
+```
+
+**Why separate the admin panel?** Isolating admin as its own app improves security (admin bundle/routes never ship to regular users) and keeps the main app lightweight, since admin-only libraries (charts, data tables) don't bloat the patient/doctor bundle.
+
+**Why unify Patient and Doctor into one frontend?** They share the majority of the UI — auth, chat, profile, order/appointment tracking — so splitting them would mean duplicating most of the app. Role-based conditional rendering (`ProtectedRoute` + `user.role` checks) keeps the codebase DRY.
+
+### Backend structure
+
+```
+backend/
+├── config/        # DB, Stripe, Cloudinary, Nodemailer configs
+├── models/        # Mongoose schemas
+├── controllers/   # Thin HTTP handlers
+├── services/      # Business logic (slotService, appointmentService, paymentService)
+├── middleware/     # auth, roleCheck, errorHandler, validateRequest
+├── routes/
+├── sockets/        # Real-time chat event handlers
+├── jobs/           # Cron jobs (appointment reminders)
+└── utils/
+```
+
+---
+
+## 🧩 Design Patterns Used
+
+| Pattern | Where it's applied |
+|---|---|
+| **MVC** | Overall backend structure |
+| **Service Layer** | Business logic (e.g. `slotService`, `appointmentService`) kept separate from route controllers |
+| **State Pattern** | Appointment status transitions are explicitly validated, not free-form |
+| **Strategy Pattern** | Notification delivery method (email vs in-app) selected at runtime |
+| **Observer Pattern** | Socket.io events; rating recalculation triggered on new review |
+| **Factory Pattern** | Notification payload construction based on event type |
+| **Chain of Responsibility** | Express middleware stack: `auth → roleCheck → doctorApprovalCheck → validateRequest → controller` |
+| **Singleton** | Database connection, Stripe client instance |
+| **Optimistic Concurrency Control** | Partial unique compound index on `Appointment` (doctor + date + startTime) prevents double-booking at the database level, without needing application-side locks |
+
+---
+
+## 🗄️ Database Schema
+
+Core collections: `User`, `DoctorProfile`, `Availability`, `Appointment`, `Prescription`, `Conversation`, `Message`, `Review`, `Notification`, `Transaction`.
+
+```
+User (patient) ──┐
+                  ├──> Appointment ──> DoctorProfile ──> User (doctor)
+User (doctor)─────┘        │                │
+                            │                └──> Availability
+                            ├──> Conversation ──> Message[]
+                            ├──> Prescription
+                            ├──> Review
+                            └──> Transaction[]
+```
+
+Notable design decisions:
+- **Availability is stored as recurring rules + exceptions**, not pre-generated time slots — bookable slots are computed at request time, keeping the database lean and always in sync with the doctor's latest schedule.
+- **`Appointment` has a partial unique index** on `{ doctor, date, startTime }` scoped to active statuses, so double-booking is rejected at the database layer even under concurrent requests.
+
+---
+
+## ✅ Functional Requirements
+
+<details>
+<summary><strong>Auth & User Management</strong></summary>
+
+- Patient registration/login (JWT-based)
+- Doctor registration — requires admin approval before going live
+- Admin login (seeded, not publicly registrable)
+- Role-based route protection middleware
+- Profile management (age/gender/history for patients; specialization/qualifications/fee for doctors)
+</details>
+
+<details>
+<summary><strong>Doctor Discovery</strong></summary>
+
+- Browse/search doctors by specialization, location, availability, rating
+- Doctor profile page with bio, qualifications, fee, reviews, and available slots
+</details>
+
+<details>
+<summary><strong>Availability & Scheduling</strong></summary>
+
+- Doctor sets weekly availability and blocks leave days
+- System auto-generates bookable slots from availability rules
+- Slots marked unavailable once booked (concurrency-safe)
+</details>
+
+<details>
+<summary><strong>Appointments</strong></summary>
+
+- Patient books an available slot, selects consult type (in-person/video)
+- Status lifecycle: `pending → confirmed → completed / cancelled / no_show`
+- Doctor can accept/reject a pending appointment
+- Either party can cancel with a reason, subject to a cancellation policy
+- Automated reminders before appointments
+</details>
+
+<details>
+<summary><strong>Payments</strong></summary>
+
+- Stripe checkout for consultation fees (test mode)
+- Refund logic on valid cancellations
+- Platform commission deducted from doctor's fee
+</details>
+
+<details>
+<summary><strong>Consultation</strong></summary>
+
+- Real-time chat between patient and doctor
+- Video consultation link
+- Doctor uploads prescription/notes after the appointment
+</details>
+
+<details>
+<summary><strong>Medical Records</strong></summary>
+
+- Patient medical history — past appointments, prescriptions, reports
+- Doctor can view a patient's relevant history before a consult
+</details>
+
+<details>
+<summary><strong>Reviews</strong></summary>
+
+- Patient rates/reviews doctor after a completed appointment
+- Ratings aggregate on doctor profile
+</details>
+
+<details>
+<summary><strong>Admin Panel</strong></summary>
+
+- Approve/reject doctor registrations
+- Manage users (block/unblock)
+- Oversee appointments, handle disputes/no-shows
+- Platform analytics dashboard
+</details>
+
+<details>
+<summary><strong>Notifications</strong></summary>
+
+- In-app and email notifications for confirmations, reminders, cancellations, and prescriptions
+</details>
+
+---
+
+## 📱 Screens
+
+~28 screens across three portals — public pages, shared pages (dashboard, appointment tracking, chat, notifications, profile), patient-only pages (booking, medical history, reviews), doctor-only pages (availability manager, consultation view, earnings), and admin-only pages (doctor verification queue, user management, analytics).
+
+---
+
+## 🚀 Getting Started
+
+### Prerequisites
+- Node.js (v18+)
+- MongoDB Atlas account (or local MongoDB)
+- Stripe account (test mode API keys)
+- Cloudinary account
+
+### Installation
+
+```bash
+# Clone the repository
+git clone https://github.com/<your-username>/carepoint.git
+cd carepoint
+
+# Backend setup
+cd backend
+npm install
+cp .env.example .env   # fill in your DB URI, JWT secret, Stripe keys, Cloudinary keys
+npm run dev
+
+# Frontend setup
+cd ../frontend
+npm install
+npm run dev
+
+# Admin panel setup
+cd ../admin
+npm install
+npm run dev
+```
+
+### Environment Variables (backend `.env`)
+
+```
+PORT=5000
+MONGO_URI=your_mongodb_connection_string
+JWT_SECRET=your_jwt_secret
+STRIPE_SECRET_KEY=your_stripe_secret_key
+CLOUDINARY_CLOUD_NAME=your_cloud_name
+CLOUDINARY_API_KEY=your_api_key
+CLOUDINARY_API_SECRET=your_api_secret
+EMAIL_USER=your_email
+EMAIL_PASS=your_email_app_password
+```
+
+---
+
+## 🗺️ Roadmap
+
+- [] Project architecture & database design
+- [] Auth system with role-based middleware
+- [] Doctor verification workflow
+- [] Dynamic slot generation service
+- [ ] Appointment booking with concurrency safety
+- [ ] Frontend: auth, dashboards, doctor search & booking flow
+- [ ] Real-time chat (Socket.io)
+- [ ] Prescriptions & medical history
+- [ ] Reviews & ratings
+- [ ] Stripe payment integration
+- [ ] Admin panel frontend
+- [ ] Automated reminders (cron)
+
+---
+
+## 📄 License
+
+This project is for portfolio/educational purposes.
