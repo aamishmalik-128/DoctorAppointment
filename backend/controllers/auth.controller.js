@@ -93,3 +93,17 @@ export const refreshAccessToken = async(req,res,next)=>{
         next(error)
     }
 }
+
+
+
+export const getCurrentUser = async(req,res,next)=>{
+    try {
+        const user = await authService.getCurrentUser(req.user.id)
+        res.status(200).json({
+            status:true,
+            user,
+        })
+    } catch (error) {
+        next(error)
+    }
+} 

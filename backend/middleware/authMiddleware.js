@@ -4,7 +4,7 @@ import AppError from '../utils/AppError.js'
 
 export const authMiddleware = async (req, res, next) => {
     try {
-        console.log(req.headers);
+        //console.log(req.headers);
         const authHeader = req.headers.authorization;
         if (!authHeader) {
             throw new AppError("Authentication Failed", 401);
@@ -12,7 +12,7 @@ export const authMiddleware = async (req, res, next) => {
         if (!authHeader.startsWith("Bearer ")) {
             throw new AppError("Invalid Authorization Header", 401);
         }
-        console.log(req.headers.authorization)
+        //console.log(req.headers.authorization)
         const token = authHeader.split(" ")[1];
         const decoded = jwt.verify(token, process.env.JWT_ACCESS_SECRET)
 

@@ -10,19 +10,19 @@ import jwt from 'jsonwebtoken'
 
 
 
-export const register = async ({ fullName, email, password, role }) => {
+export const register = async ({ fullName, email, password }) => {
    
     console.log("fullName:", fullName);
     console.log("email:", email);
     console.log("password:", password);
-    console.log("role:", role);
+
 
     
     const existingUser = await User.findOne({ email })
     if (existingUser) {
         throw new AppError("Email Already Registered", 409)
     }
-    const user = await User.create({ fullName, email, password, role, isVerified: role === ROLES.PATIENT })
+    const user = await User.create({ fullName, email, password, role:ROLES.PATIENT})
     const accessToken = generateAccessToken(user)
     const refreshToken = generateRefreshToken(user)
     await user.updateOne({
@@ -52,9 +52,6 @@ export const login = async ({ email, password }) => {
     }
     if (user.isBlocked) {
         throw new AppError("Your Account has been Blocked", 403)
-    }
-    if (user.role === ROLES.DOCTOR && !user.isVerified) {
-        throw new AppError("Waiting for Admin Approval", 403)
     }
     const accessToken = generateAccessToken(user)
     const refreshToken = generateRefreshToken(user)
@@ -109,4 +106,13 @@ export const refreshAccessToken = async (refreshToken) => {
         accessToken,
         refreshToken: newRefreshToken
     }
+}
+
+
+export const getCurrentUser = async(userId)=>{
+     const user = await User.findById(userId).select("-password -refreshToken");
+     if(!user){
+        throw new AppError("User not found", 404)
+     }
+     return user;
 }

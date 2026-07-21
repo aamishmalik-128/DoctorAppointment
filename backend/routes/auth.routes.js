@@ -4,7 +4,6 @@ import { loginValidation, registerValidation, } from '../validators/auth.validat
 import authMiddleware from '../middleware/authMiddleware.js';
 
 
-
 const router=express.Router();
 
 
@@ -15,4 +14,5 @@ router.post('/login',loginValidation,authController.login)
 router.post('/logout',authMiddleware,authController.logout)
 
 router.post('/refresh-token',authController.refreshAccessToken)
+router.get("/me",authMiddleware,authController.getCurrentUser);
 export default router

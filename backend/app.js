@@ -6,7 +6,10 @@ import cookieParser from 'cookie-parser'
 import dotenv from 'dotenv'
 import errorHandler from './middleware/errorHandler.js'
 import authRoutes from './routes/auth.routes.js'
+import doctorRoutes from './routes/doctor.routes.js'
+
 dotenv.config()
+
 // console.log('process', process.env.MONGO_URI)
 const app = express()
 
@@ -31,6 +34,7 @@ app.get("/api/health", (req, res) => {
     });
 });
 app.use("/api/auth", authRoutes);
+app.use("/api/doctors",doctorRoutes)
 app.use(errorHandler)
 
 export default app;
