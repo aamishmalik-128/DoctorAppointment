@@ -1,4 +1,6 @@
+import { ROLES } from "../constants/roles.js"
 import Doctor from "../models/Doctor.js"
+import User from "../models/User.js"
 import AppError from "../utils/AppError.js"
 
 
@@ -67,7 +69,7 @@ export const getAllDoctors = async (query) => {
     const skip =(pageNumber-1)*limitNumber;
     const totalDoctors = await Doctor.countDocuments(filter);
 
-    const doctors = (await Doctor.find(filter).populate("user","fullName email")).toSorted({createdAt: -1}).skip(skip).limit(limitNumber)
+    const doctors = await Doctor.find(filter).populate("user","fullName email").sorted({createdAt: -1}).skip(skip).limit(limitNumber)
     
     return{
         totalDoctors,
@@ -76,3 +78,64 @@ export const getAllDoctors = async (query) => {
         doctors
     }
 }
+
+
+export const getAllUser =async(query)=>{
+    const {page=1,limit =10,role,isBlocked}=query
+    const filter ={}
+    if(isBlocked!==undefined){
+        filter.isBlocked=isBlocked==="true"
+    }
+    if(role){
+        filter.role=role
+    }
+     const pageNumber = Number(page);
+    const limitNumber=Number(limit);
+    const skip =(pageNumber-1)*limitNumber;
+    const totalUsers = await User.countDocuments(filter);
+    const users = await User.find(filter).select('-password -refreshToken').sorted({createdAt: -1}).skip(skip).limit(limitNumber)
+    return{
+        totalUsers,
+        user,
+        currentPage:pageNumber,
+        totalPages:Math.ceil(totalUsers/limitNumber)
+    }
+} 
+
+export const blockUser = async (currentUserId,targetUserId)=>{
+    if(currentUserId === targetUserId){
+        throw new AppError("You cannot block your own account",404)
+    }
+    const user = await User.findById(targetUserId)
+    if(!user){
+        throw new AppError("User not found",404)
+    }
+    if(user.role ==="admin"){
+        throw new AppError("Super Admin account cannot be Blocked",403)
+    }
+    if(user.isBlocked){
+        throw new AppError("User is already Blocked",400)
+    }
+    user.isBlocked=true
+    await user.save()
+    return user;
+}
+
+export const unblockUser = async (userId) => {
+
+    const user = await User.findById(userId);
+
+    if (!user) {
+        throw new AppError("User not found.", 404);
+    }
+
+    if (!user.isBlocked) {
+        throw new AppError("User is already active.", 400);
+    }
+
+    user.isBlocked = false;
+
+    await user.save();
+
+    return user;
+};

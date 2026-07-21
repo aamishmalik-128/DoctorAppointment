@@ -1,3 +1,4 @@
+import User from '../models/User.js'
 import * as adminServices from '../services/admin.services.js'
 
 
@@ -52,3 +53,47 @@ export const getAllDoctors=async(req,res,next)=>{
         next(error)
     }
 }
+
+export const getAllUser = async(req,res,next)=>{
+   try {
+     const result= await adminServices.getAllUser(req.query)
+     return res.status(200).json({
+        success:true,
+        ...result,
+     })
+   } catch (error) {
+    next(error)
+   }
+} 
+
+export const blockUser = async(req,res,next)=>{
+    try {
+        const user = await adminServices.blockUser(req.user.id,req.params.id)
+        return res.status(200).json({
+            success:true,
+            message:"User Blocked Successfully",
+            user,
+        })
+    } catch (error) {
+        next(error)
+    }
+}
+
+
+export const unblockUser = async (req, res, next) => {
+    try {
+
+        const user = await adminServices.unblockUser(
+            req.params.id
+        );
+
+        return res.status(200).json({
+            success: true,
+            message: "User unblocked successfully.",
+            user,
+        });
+
+    } catch (error) {
+        next(error);
+    }
+};
