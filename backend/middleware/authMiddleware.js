@@ -1,8 +1,9 @@
 import jwt from 'jsonwebtoken'
 import User from '../models/User.js'
 import AppError from '../utils/AppError.js'
+import { roleMiddleware } from './roleMiddleware.js';
 
-export const authMiddleware = async (req, res, next) => {
+const authMiddleware = async (req, res, next) => {
     try {
         //console.log(req.headers);
         const authHeader = req.headers.authorization;
@@ -34,4 +35,5 @@ export const authMiddleware = async (req, res, next) => {
         next(error)
     }
 }
-export default authMiddleware;
+
+export default authMiddleware

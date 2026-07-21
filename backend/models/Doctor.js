@@ -46,10 +46,7 @@ const doctorSchema = new mongoose.Schema({
         type:String,
         default:""
     },
-    profileImage:{
-        type:String,
-        default:"",
-    },
+    
     availableDays:[
         {
             type: String,

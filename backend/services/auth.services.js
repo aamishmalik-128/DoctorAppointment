@@ -42,10 +42,13 @@ export const register = async ({ fullName, email, password }) => {
     }
 }
 export const login = async ({ email, password }) => {
+    //console.log("email being checked",email)
     const user = await User.findOne({ email }).select("+password +refreshToken")
+    //console.log("User found:", user);
     if (!user) {
         throw new AppError("InValid email or password", 401)
     }
+    //console.log("hashed stored", user.password)
     const matched = await user.comparePassword(password);
     if (!matched) {
         throw new AppError("Invalid Email or password", 401)

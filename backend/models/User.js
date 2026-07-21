@@ -14,7 +14,7 @@ const userSchema = new mongoose.Schema({
         type:String,
         required:[true,'Email is required'],
         unique:true,
-        lowerCase:true,
+        lowercase:true,
         trim:true
     },
     password:{
@@ -27,10 +27,6 @@ const userSchema = new mongoose.Schema({
         type:String,
         enum:Object.values(ROLES),
         required:true
-    },
-    isVerified:{
-        type:Boolean,
-        default:true,
     },
     isBlocked:{
         type:Boolean,
@@ -55,7 +51,7 @@ const userSchema = new mongoose.Schema({
 
 userSchema.pre("save",async function() {
     if(!this.isModified("password")){
-        return next()
+        return 
     }
     const saltRounds = Number(process.env.BCRYPT_SALT);
     console.log(saltRounds)
