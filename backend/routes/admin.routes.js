@@ -1,7 +1,8 @@
 import express from 'express'
 import authMiddleware from '../middleware/authMiddleware.js'
 import  {roleMiddleware}  from '../middleware/roleMiddleware.js'
-import { approveDoctor, getAllDoctors, getAllUser, getPendingDoctors, rejectedDoctor,blockUser,unblockUser } from '../controllers/admin.controller.js'
+import { approveDoctor, getAllDoctors, getAllUser, getPendingDoctors, rejectedDoctor,blockUser,unblockUser,getDashBoardStats } from '../controllers/admin.controller.js'
+
 
 
 
@@ -19,4 +20,8 @@ router.get('/doctors',authMiddleware,roleMiddleware("admin"),getAllDoctors)
 router.get('/users',authMiddleware,roleMiddleware("admin"),getAllUser)
 router.patch('/users/:id/block',authMiddleware,roleMiddleware("admin"),blockUser)
 router.patch("/users/:id/unblock",authMiddleware,roleMiddleware("admin"),unblockUser);
+
+
+//for statistics on dashboard
+router.get("/dashboard",authMiddleware,roleMiddleware("admin"),getDashBoardStats)
 export default router

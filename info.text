@@ -1,0 +1,7 @@
+user access token register = eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjZhNjA1YzVjYjc1NWNlNWNhMDMxMTRmMyIsInJvbGUiOiJwYXRpZW50IiwiaWF0IjoxNzg0Njk5OTk2LCJleHAiOjE3ODUzMDQ3OTZ9.hkc5PZMdp0wqyZxqKZ5vsRuKjc-3sMcBjhkjIa59o3Q
+with email password registered as {
+    "fullName": "Dr Ahmed Ali",
+    "email": "test1122@gmail.com",
+    "password": "Password1122",
+    "role":"patient"
+}

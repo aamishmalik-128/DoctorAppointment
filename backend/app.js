@@ -8,7 +8,7 @@ import errorHandler from './middleware/errorHandler.js'
 import authRoutes from './routes/auth.routes.js'
 import doctorRoutes from './routes/doctor.routes.js'
 import adminRoutes from '../backend/routes/admin.routes.js'
-
+import doctorAppointmentRoute from './routes/apointment.routes.js'
 
 dotenv.config()
 
@@ -38,6 +38,7 @@ app.get("/api/health", (req, res) => {
 app.use("/api/auth", authRoutes);
 app.use("/api/doctors",doctorRoutes)
 app.use("/api/admin",adminRoutes)
+app.use('/api/appointment',doctorAppointmentRoute)
 app.use(errorHandler)
 
 export default app;

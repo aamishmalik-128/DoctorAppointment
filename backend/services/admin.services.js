@@ -16,7 +16,7 @@ export const getPendingDoctors = async()=>{
 
 
 export const approveDoctor=async(doctorId)=>{
-    const doctor=await Doctor.findById(doctorId);
+    const doctor=await Doctor.findOne(doctorId);
     if(!doctor){
         throw new AppError("Doctor not found",404);
     }
@@ -139,3 +139,25 @@ export const unblockUser = async (userId) => {
 
     return user;
 };
+
+export const getDashboardStats = async ()=>{
+    const [totalUser,totalDoctos,pendingDoctors,approvedDoctors,rejectedDoctors,blockedUsers,]=await Promise.all([
+        User.countDocuments(),
+        Doctor.countDocuments(),
+        Doctor.countDocuments({
+            status:"pending"
+        }),
+        Doctor.countDocuments({
+            status:"approved"
+        }),
+        Doctor.countDocuments({
+            status:"rejected"
+        }),
+        User.countDocuments({
+            isBlocked:true,
+        }),
+    ]);
+
+
+    return {totalUser,totalDoctos,pendingDoctors,approvedDoctors,rejectDoctors,blockUsers}
+}

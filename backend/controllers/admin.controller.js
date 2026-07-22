@@ -97,3 +97,16 @@ export const unblockUser = async (req, res, next) => {
         next(error);
     }
 };
+
+
+export const getDashBoardStats = async (req,res,next)=>{
+    try {
+        const stats = await adminServices.getDashboardStats()
+        return res.status(200).json({
+            success:true,
+            stats
+        })
+    } catch (error) {
+        next(error)
+    }
+}
