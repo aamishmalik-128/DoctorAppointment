@@ -60,3 +60,102 @@ export const cancelAppointment= async(req,res,next)=>{
         next(error)
     }
 }
+
+export const getDoctorAppointments = async (req, res, next) => {
+    try {
+
+        const result = await appointmentService.getDoctorAppointments(
+            req.user.id,
+            req.query
+        );
+
+        return res.status(200).json({
+            success: true,
+            ...result,
+        });
+
+    } catch (error) {
+        next(error);
+    }
+};
+
+export const confirmAppointment = async (req, res, next) => {
+    try {
+
+        const appointment = await appointmentService.confirmAppointment(
+            req.user.id,
+            req.params.id
+        );
+
+        return res.status(200).json({
+            success: true,
+            message: "Appointment confirmed successfully.",
+            appointment,
+        });
+
+    } catch (error) {
+        next(error);
+    }
+};
+
+
+export const rejectAppointment = async (req, res, next) => {
+    try {
+
+        const appointment = await appointmentService.rejectAppointment(
+            req.user.id,
+            req.params.id,
+            req.body.reason
+        );
+
+        return res.status(200).json({
+            success: true,
+            message: "Appointment rejected successfully.",
+            appointment,
+        });
+
+    } catch (error) {
+        next(error);
+    }
+};
+
+
+export const completeAppointment = async (req, res, next) => {
+    try {
+
+        const appointment = await appointmentService.completeAppointment(
+            req.user.id,
+            req.params.id
+        );
+
+        return res.status(200).json({
+            success: true,
+            message: "Appointment completed successfully.",
+            appointment,
+        });
+
+    } catch (error) {
+        next(error);
+    }
+};
+
+
+export const rescheduleAppointment = async (req, res, next) => {
+    try {
+
+        const appointment = await appointmentService.rescheduleAppointment(
+            req.user.id,
+            req.params.id,
+            req.body
+        );
+
+        return res.status(200).json({
+            success: true,
+            message: "Appointment rescheduled successfully.",
+            appointment,
+        });
+
+    } catch (error) {
+        next(error);
+    }
+};

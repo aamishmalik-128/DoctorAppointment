@@ -232,3 +232,183 @@ export const cancelAppointment=async(appointmentId,patientId,reason)=>{
 
     return appointment;
 }
+
+
+
+export const getDoctorAppointments= async(userId,query)=>{
+    const doctor = await Doctor.findOne({ user: userId });
+    if (!doctor) {
+        throw new AppError("Doctor profile not found", 404);
+    }
+    const {page = 1,limit = 10,status,consultationType,date,} = query;
+    const filter = {doctor: doctor._id,};
+    if (status) {
+        filter.status = status
+    }
+    if (consultationType) {
+        filter.consultationType = consultationType;
+    }
+
+    if (date) {
+
+        const start = new Date(date);
+        start.setHours(0, 0, 0, 0);
+
+        const end = new Date(date);
+        end.setHours(23, 59, 59, 999);
+
+        filter.appointmentDateTime = {
+            $gte: start,
+            $lte: end,
+        };
+    }
+    const pageNumber = Number(page);
+    const limitNumber = Number(limit);
+    const skip = (pageNumber - 1) * limitNumber;
+
+    const totalAppointments = await Appointment.countDocuments(filter);
+
+    const appointments = await Appointment.find(filter)
+        .populate({
+            path: "patient",
+            select: "fullName email",
+        })
+        .sort({
+            appointmentDateTime: 1,
+        })
+        .skip(skip)
+        .limit(limitNumber);
+     return {
+        appointments,
+        totalAppointments,
+        currentPage: pageNumber,
+        totalPages: Math.ceil(totalAppointments / limitNumber),
+    };
+}
+
+export const confirmAppointment= async (userId,appointmentId)=>{
+    const doctor = await Doctor.findOne({user:userId});
+    if(!doctor){
+        throw new AppError("Doctor Profile not found",404);
+    }
+
+    const appointment = await Appointment.findById(appointmentId)
+    .populate('patient','fullName email')
+    .populate({
+        path:"doctor",
+        populate:{
+            path:"user",
+            select:"fullName email"
+        }
+    })
+    if(!appointment){
+        throw new AppError("Appointment not found",404)
+    }
+    console.log("Doctor from token:", doctor._id.toString());
+console.log("Doctor in appointment:", appointment.doctor._id.toString());
+    if(appointment.doctor._id.toString() !== doctor._id.toString()){
+        throw new AppError("Unauthorized",403);
+    }
+    if(appointment.status !== "pending"){
+        throw new AppError("Only pending appointments can be confirmed",400)
+    }
+    appointment.status = "confirmed";
+    await appointment.save()
+    return appointment;
+}
+
+export const rejectAppointment = async (userId,appointmentId,reason)=>{
+    const doctor = await Doctor.findOne({user:userId})
+    if(!doctor){
+        throw new AppError("Doctor profile not Found",404)
+    }
+    const appointment = await Appointment.findById(appointmentId);
+    if(!appointment){
+         throw new AppError("Appointment not found", 404);
+    }
+    if (appointment.doctor.toString() !== doctor._id.toString()) {
+        throw new AppError("Unauthorized", 403);
+    }
+    if (appointment.status !== "pending") {
+        throw new AppError(
+            "Only pending appointments can be rejected",
+            400
+        );
+    }
+    appointment.status = "rejected";
+    appointment.cancellationReason = reason;
+    await appointment.save();
+    return appointment;
+}
+export const completeAppointment = async (userId,appointmentId) => {
+
+    const doctor = await Doctor.findOne({ user: userId });
+
+    if (!doctor) {
+        throw new AppError("Doctor profile not found", 404);
+    }
+
+    const appointment = await Appointment.findById(appointmentId);
+
+    if (!appointment) {
+        throw new AppError("Appointment not found", 404);
+    }
+
+    if (appointment.doctor.toString() !== doctor._id.toString()) {
+        throw new AppError("Unauthorized", 403);
+    }
+
+    if (appointment.status !== "confirmed") {
+        throw new AppError(
+            "Only confirmed appointments can be completed",
+            400
+        );
+    }
+
+    appointment.status = "completed";
+
+    await appointment.save();
+
+    return appointment;
+};
+
+
+export const rescheduleAppointment = async (userId,appointmentId,data) => {
+
+    const doctor = await Doctor.findOne({ user: userId });
+
+    if (!doctor) {
+        throw new AppError("Doctor profile not found", 404);
+    }
+
+    const appointment = await Appointment.findById(appointmentId);
+
+    if (!appointment) {
+        throw new AppError("Appointment not found", 404);
+    }
+
+    if (appointment.doctor.toString() !== doctor._id.toString()) {
+        throw new AppError("Unauthorized", 403);
+    }
+
+    const { appointmentDateTime } = data;
+
+    await validateDoctorAvailability(
+        doctor,
+        appointmentDateTime
+    );
+
+    await validateAppointmentConflict(
+        doctor._id,
+        appointmentDateTime,
+        doctor.slotDuration,
+        appointment._id
+    );
+
+    appointment.appointmentDateTime = appointmentDateTime;
+    appointment.status = "rescheduled";
+
+    await appointment.save();
+
+    return appointment;
+};

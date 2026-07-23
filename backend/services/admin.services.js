@@ -16,7 +16,7 @@ export const getPendingDoctors = async()=>{
 
 
 export const approveDoctor=async(doctorId)=>{
-    const doctor=await Doctor.findOne(doctorId);
+    const doctor=await Doctor.findById(doctorId);
     if(!doctor){
         throw new AppError("Doctor not found",404);
     }
@@ -69,7 +69,7 @@ export const getAllDoctors = async (query) => {
     const skip =(pageNumber-1)*limitNumber;
     const totalDoctors = await Doctor.countDocuments(filter);
 
-    const doctors = await Doctor.find(filter).populate("user","fullName email").sorted({createdAt: -1}).skip(skip).limit(limitNumber)
+    const doctors = await Doctor.find(filter).populate("user","fullName email").sort({createdAt: -1}).skip(skip).limit(limitNumber)
     
     return{
         totalDoctors,
