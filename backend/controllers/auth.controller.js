@@ -100,7 +100,7 @@ export const getCurrentUser = async(req,res,next)=>{
     try {
         const user = await authService.getCurrentUser(req.user.id)
         res.status(200).json({
-            status:true,
+            success:true,
             user,
         })
     } catch (error) {

@@ -10,8 +10,58 @@ import {
     Lock,
     Eye,
 } from "lucide-react";
-
+import { useState, useEffect } from "react";
+import { useDispatch, useSelector } from 'react-redux'
+import { useNavigate } from "react-router-dom";
+import { login } from '../../redux/feature/auth/authThunk.js'
 const Login = () => {
+
+
+
+    const [formData, setFormData] = useState({ email: "", password: "" })
+    const dispatch = useDispatch()
+    const navigate = useNavigate()
+    const { loading, error, isAuthenticated, user } = useSelector((state) => state.auth)
+
+    const handleChange = ((e) => {
+        setFormData((prev) => ({
+            ...prev,
+            [e.target.name]: e.target.value
+        }))
+    })
+    const handleSubmit = async (e) => {
+        console.log("login button pressed")
+        e.preventDefault();
+console.log(login);
+console.log(typeof login);
+        dispatch(login(formData));
+        // console.log('formData',formData)
+
+    };
+
+    useEffect(() => {
+
+        if (!isAuthenticated || !user) return;
+
+        switch (user.role) {
+
+            case "patient":
+                navigate("/");
+                break;
+
+            case "doctor":
+                navigate("/doctor");
+                break;
+
+            case "admin":
+                navigate("/admin");
+                break;
+
+            default:
+                navigate("/");
+        }
+
+    }, [isAuthenticated, user, navigate]);
     return (
         <section className="relative min-h-screen lg:h-screen lg:max-h-screen bg-gradient-to-r from-slate-900 via-teal-950 to-slate-900 text-white flex items-center justify-center py-6 sm:py-8 lg:py-10 px-4 sm:px-6 lg:px-8 overflow-y-auto">
 
@@ -149,7 +199,7 @@ const Login = () => {
                             </div>
 
                             {/* Login Form */}
-                            <form className="space-y-4" onSubmit={e => e.preventDefault()}>
+                            <form className="space-y-4" onSubmit={handleSubmit}>
 
                                 {/* Email Input */}
                                 <div className="space-y-1.5 text-left">
@@ -160,6 +210,9 @@ const Login = () => {
                                         <Mail size={18} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400" />
                                         <input
                                             type="email"
+                                            name='email'
+                                            value={formData.email}
+                                            onChange={handleChange}
                                             placeholder="john@example.com"
                                             className="w-full rounded-xl border border-slate-200 bg-slate-50/50 pl-10 pr-4 py-2.5 text-sm text-slate-800 placeholder-slate-400 focus:border-teal-500 focus:bg-white focus:outline-none focus:ring-2 focus:ring-teal-500/20 transition-all"
                                         />
@@ -175,6 +228,9 @@ const Login = () => {
                                         <Lock size={18} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400" />
                                         <input
                                             type="password"
+                                            name="password"
+                                            value={formData.password}
+                                            onChange={handleChange}
                                             placeholder="••••••••"
                                             className="w-full rounded-xl border border-slate-200 bg-slate-50/50 pl-10 pr-10 py-2.5 text-sm text-slate-800 placeholder-slate-400 focus:border-teal-500 focus:bg-white focus:outline-none focus:ring-2 focus:ring-teal-500/20 transition-all"
                                         />
@@ -203,15 +259,23 @@ const Login = () => {
                                     </Link>
 
                                 </div>
+                                {
+                                    error && (
+                                        <div className="rounded-xl border border-red-200 bg-red-50 p-3 text-sm text-red-600">
+                                            {error}
+                                        </div>
+                                    )
+                                }
 
                                 {/* Login Submit Button */}
                                 <motion.button
                                     whileHover={{ scale: 1.01 }}
                                     whileTap={{ scale: 0.99 }}
                                     type="submit"
+                                    disabled={loading}
                                     className="flex w-full items-center justify-center gap-2 rounded-xl bg-teal-500 py-3 px-4 font-bold text-slate-950 shadow-md hover:bg-teal-400 transition-all duration-200 active:scale-[0.98] mt-2 text-sm"
                                 >
-                                    Login
+                                    {loading ? "Signing In..." : "Login"}
                                     <ArrowRight size={16} className="text-slate-950" />
                                 </motion.button>
 
