@@ -12,6 +12,7 @@ import PublicRoute from './components/auth/PublicRoute.jsx'
 import Register from './Pages/auth/RegisterPatient.jsx'
 import Profile from './Pages/patient/Profile.jsx'
 import EditProfile from './Pages/patient/EditProfile.jsx'
+import ChangePassword from './Pages/patient/ChangePassword.jsx'
 
 const App = () => {
   const dispatch = useDispatch()
@@ -60,6 +61,10 @@ const App = () => {
           <Route
             path="/profile/edit"
             element={<EditProfile />}
+          /> 
+          <Route
+            path="/profile/change-password"
+            element={<ChangePassword />}
           /> 
 
         </Route>

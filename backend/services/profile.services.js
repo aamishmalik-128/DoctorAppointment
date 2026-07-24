@@ -1,6 +1,7 @@
 import User from "../models/User.js";
 import AppError from "../utils/AppError.js";
 import cloudinary from "../config/cloudinary.js";
+import bcrypt from "bcryptjs";
 
 export const updateProfile = async (userId, data) => {
     const user = await User.findById(userId);
@@ -92,4 +93,24 @@ export const deleteAvatar = async (userId) => {
     await user.save({ validateModifiedOnly: true });
 
     return user;
+};
+
+export const changePassword = async (userId, currentPassword, newPassword) => {
+    const user = await User.findById(userId).select("+password");
+    if (!user) {
+        throw new AppError("User not found", 404);
+    }
+
+    const isPasswordCorrect = await bcrypt.compare(currentPassword, user.password);
+    if (!isPasswordCorrect) {
+        throw new AppError("Current password is incorrect", 400);
+    }
+
+    if (currentPassword === newPassword) {
+        throw new AppError("New password cannot be the same as the current password", 400);
+    }
+
+    user.password = newPassword;
+    await user.save();
+    return true;
 };

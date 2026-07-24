@@ -130,3 +130,21 @@ export const deleteAvatar = createAsyncThunk(
         }
     }
 );
+
+
+export const changePassword = createAsyncThunk(
+    "auth/changePassword",
+    async (passwordData, thunkAPI) => {
+        try {
+            const response = await api.put(
+                "/profile/change-password",
+                passwordData
+            );
+            return response.data;
+        } catch (error) {
+            return thunkAPI.rejectWithValue(
+                error.response?.data?.message || error.message || "Failed to change password"
+            );
+        }
+    }
+);

@@ -1,5 +1,5 @@
 import { createSlice } from "@reduxjs/toolkit";
-import { register, login, logout, getCurrentUser, refreshToken, updateUserProfile, updateUserAvatar, deleteAvatar } from './authThunk.js'
+import { register, login, logout, getCurrentUser, refreshToken, updateUserProfile, updateUserAvatar, deleteAvatar, changePassword } from './authThunk.js'
 const initialState = {
     user: null,
     accessToken: localStorage.getItem("accessToken") || null,
@@ -113,6 +113,25 @@ const authSlice = createSlice({
                 if (action.payload?.user) {
                     state.user = { ...state.user, ...action.payload.user };
                 }
+            })
+            .addCase(changePassword.pending, (state) => {
+
+                state.loading = true;
+
+            })
+
+            .addCase(changePassword.fulfilled, (state) => {
+
+                state.loading = false;
+
+            })
+
+            .addCase(changePassword.rejected, (state, action) => {
+
+                state.loading = false;
+
+                state.error = action.payload?.message;
+
             })
 
     }

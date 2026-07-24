@@ -7,6 +7,7 @@ import {
     Calendar,
     MapPin,
     Shield,
+    KeyRound,
 } from "lucide-react";
 
 const Profile = () => {
@@ -100,13 +101,21 @@ const Profile = () => {
                 </div>
 
                 {/* Footer */}
-                <div className="border-t border-slate-800/80 p-6 sm:p-8 bg-slate-900/40">
+                <div className="border-t border-slate-800/80 p-6 sm:p-8 bg-slate-900/40 flex flex-col sm:flex-row gap-4">
 
                     <button
                         onClick={() => navigate("/profile/edit")}
-                        className="w-full rounded-xl bg-teal-500 py-3.5 font-bold text-slate-950 shadow-md transition-all duration-200 hover:bg-teal-400 active:scale-[0.99] cursor-pointer text-sm sm:text-base flex items-center justify-center gap-2"
+                        className="flex-1 rounded-xl bg-teal-500 py-3.5 font-bold text-slate-950 shadow-md transition-all duration-200 hover:bg-teal-400 active:scale-[0.99] cursor-pointer text-sm sm:text-base flex items-center justify-center gap-2"
                     >
                         Edit Profile
+                    </button>
+
+                    <button
+                        onClick={() => navigate("/profile/change-password")}
+                        className="flex-1 rounded-xl border border-slate-700 bg-slate-800 py-3.5 font-bold text-slate-200 shadow-md transition-all duration-200 hover:bg-slate-700 hover:text-white active:scale-[0.99] cursor-pointer text-sm sm:text-base flex items-center justify-center gap-2"
+                    >
+                        <KeyRound size={18} className="text-teal-400" />
+                        Change Password
                     </button>
 
                 </div>
