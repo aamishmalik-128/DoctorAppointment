@@ -15,4 +15,5 @@ router.post('/logout',authMiddleware,authController.logout)
 
 router.post('/refresh-token',authController.refreshAccessToken)
 router.get("/me",authMiddleware,authController.getCurrentUser);
+
 export default router

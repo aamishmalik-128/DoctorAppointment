@@ -30,12 +30,12 @@ const Login = () => {
         }))
     })
     const handleSubmit = async (e) => {
-        console.log("login button pressed")
+        //console.log("login button pressed")
         e.preventDefault();
-console.log(login);
-console.log(typeof login);
+// console.log(login);
+// console.log(typeof login);
         dispatch(login(formData));
-        // console.log('formData',formData)
+        console.log('formData',formData)
 
     };
 

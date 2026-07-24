@@ -82,3 +82,51 @@ export const refreshToken = createAsyncThunk(
         }
     }
 );
+
+export const updateUserProfile = createAsyncThunk(
+    "auth/updateUserProfile",
+    async (formData, thunkAPI) => {
+        try {
+            const response = await api.put("/profile", formData);
+            return response.data;
+        } catch (error) {
+            return thunkAPI.rejectWithValue(
+                error.response?.data?.message || error.message || "Failed to update profile"
+            );
+        }
+    }
+);
+
+export const updateUserAvatar = createAsyncThunk(
+    "auth/updateUserAvatar",
+    async (avatarFile, thunkAPI) => {
+        try {
+            const data = new FormData();
+            data.append("avatar", avatarFile);
+            const response = await api.put("/profile/avatar", data, {
+                headers: {
+                    "Content-Type": "multipart/form-data",
+                },
+            });
+            return response.data;
+        } catch (error) {
+            return thunkAPI.rejectWithValue(
+                error.response?.data?.message || error.message || "Failed to upload avatar"
+            );
+        }
+    }
+);
+
+export const deleteAvatar = createAsyncThunk(
+    "auth/deleteAvatar",
+    async (_, thunkAPI) => {
+        try {
+            const response = await api.delete("/profile/avatar");
+            return response.data;
+        } catch (error) {
+            return thunkAPI.rejectWithValue(
+                error.response?.data?.message || error.message || "Failed to delete avatar"
+            );
+        }
+    }
+);

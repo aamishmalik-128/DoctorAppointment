@@ -11,18 +11,18 @@ import jwt from 'jsonwebtoken'
 
 
 export const register = async ({ fullName, email, password }) => {
-   
+
     console.log("fullName:", fullName);
     console.log("email:", email);
     console.log("password:", password);
 
 
-    
+
     const existingUser = await User.findOne({ email })
     if (existingUser) {
         throw new AppError("Email Already Registered", 409)
     }
-    const user = await User.create({ fullName, email, password, role:ROLES.PATIENT})
+    const user = await User.create({ fullName, email, password, role: ROLES.PATIENT })
     const accessToken = generateAccessToken(user)
     const refreshToken = generateRefreshToken(user)
     await user.updateOne({
@@ -37,6 +37,8 @@ export const register = async ({ fullName, email, password }) => {
             fullName: user.fullName,
             email: user.email,
             role: user.role,
+            avatar: user.avatar,
+            createdAt: user.createdAt,
 
         }
     }
@@ -70,6 +72,8 @@ export const login = async ({ email, password }) => {
             fullName: user.fullName,
             email: user.email,
             role: user.role,
+            avatar: user.avatar,
+            createdAt: user.createdAt,
 
         }
     }
@@ -112,10 +116,19 @@ export const refreshAccessToken = async (refreshToken) => {
 }
 
 
-export const getCurrentUser = async(userId)=>{
-     const user = await User.findById(userId).select("-password -refreshToken");
-     if(!user){
+export const getCurrentUser = async (userId) => {
+    const user = await User.findById(userId)
+    if (!user) {
         throw new AppError("User not found", 404)
-     }
-     return user;
+    }
+    return {
+        id: user._id,
+        fullName: user.fullName,
+        email: user.email,
+        role: user.role,
+        avatar: user.avatar,
+        createdAt: user.createdAt,
+    };
 }
+
+

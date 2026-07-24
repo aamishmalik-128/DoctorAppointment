@@ -1,16 +1,22 @@
 import { useState } from "react";
-import { Link, NavLink } from "react-router-dom";
-import { Menu, X, HeartPulse, Bell } from "lucide-react";
+import { Link, NavLink, useNavigate } from "react-router-dom";
+import { Menu, X, HeartPulse } from "lucide-react";
 import { motion } from "framer-motion";
+import { useDispatch, useSelector } from "react-redux";
+
 import MobileMenu from "./MobileMenu";
 import UserDropdown from "./UserDropDown";
+import { logout } from "../../redux/feature/auth/authThunk";
 
 const Navbar = () => {
     const [isOpen, setIsOpen] = useState(false);
 
-    // Temporary values
-    const isAuthenticated = false;
-    const user = null;
+    const dispatch = useDispatch();
+    const navigate = useNavigate();
+
+    const { isAuthenticated, user } = useSelector(
+        (state) => state.auth
+    );
 
     const navLinks = [
         { name: "Home", path: "/" },
@@ -20,28 +26,46 @@ const Navbar = () => {
         { name: "Contact", path: "/contact" },
     ];
 
+    const handleLogout = async () => {
+        try {
+            await dispatch(logout()).unwrap();
+
+            setIsOpen(false);
+
+            navigate("/login",{replace:true});
+        } catch (error) {
+            console.log(error);
+        }
+    };
+
     return (
         <header className="sticky top-0 z-50 border-b border-slate-800/80 bg-slate-950/95 backdrop-blur-md text-white shadow-md">
 
             <div className="mx-auto flex h-20 max-w-7xl items-center justify-between px-4 sm:px-6 lg:px-8">
 
                 {/* Logo */}
+
                 <Link
                     to="/"
-                    className="flex items-center gap-3 group shrink-0"
+                    className="group flex shrink-0 items-center gap-3"
                 >
-                    <div className="rounded-xl bg-gradient-to-br from-teal-500 to-cyan-500 p-2.5 text-slate-950 shadow-sm group-hover:scale-105 transition-transform">
+                    <div className="rounded-xl bg-gradient-to-br from-teal-500 to-cyan-500 p-2.5 shadow-sm transition-transform group-hover:scale-105">
+
                         <HeartPulse
                             size={24}
                             className="text-slate-950"
                         />
+
                     </div>
 
                     <div>
 
-                        <h1 className="font-heading font-extrabold text-xl sm:text-2xl text-white tracking-tight leading-tight">
+                        <h1 className="text-xl font-extrabold tracking-tight sm:text-2xl">
 
-                            Care<span className="text-teal-400">Point</span>
+                            Care
+                            <span className="text-teal-400">
+                                Point
+                            </span>
 
                         </h1>
 
@@ -55,7 +79,8 @@ const Navbar = () => {
 
                 </Link>
 
-                {/* Desktop Links */}
+                {/* Desktop Navigation */}
+
                 <nav className="hidden items-center gap-7 lg:flex">
 
                     {navLinks.map((link) => (
@@ -64,10 +89,10 @@ const Navbar = () => {
                             key={link.path}
                             to={link.path}
                             className={({ isActive }) =>
-                                `relative text-sm font-semibold transition-colors duration-150 py-1
-                                ${isActive
-                                    ? "text-teal-400"
-                                    : "text-slate-300 hover:text-teal-400"
+                                `relative py-1 text-sm font-semibold ${
+                                    isActive
+                                        ? "text-teal-400"
+                                        : "text-slate-300 hover:text-teal-400"
                                 }`
                             }
                         >
@@ -78,7 +103,7 @@ const Navbar = () => {
                                     {isActive && (
                                         <motion.div
                                             layoutId="navbar-indicator"
-                                            className="absolute -bottom-1.5 left-0 h-0.5 w-full rounded-full bg-teal-400 shadow-sm"
+                                            className="absolute -bottom-1.5 left-0 h-0.5 w-full rounded-full bg-teal-400"
                                         />
                                     )}
                                 </>
@@ -89,47 +114,40 @@ const Navbar = () => {
 
                 </nav>
 
-                {/* Right Side Actions */}
-                <div className="hidden items-center gap-3 lg:flex">
+                {/* Desktop Right */}
+
+                <div className="hidden items-center gap-4 lg:flex">
 
                     {!isAuthenticated ? (
                         <>
                             <Link
                                 to="/login"
-                                className="rounded-xl border border-slate-700 bg-slate-900/80 px-4.5 py-2 text-xs sm:text-sm font-semibold text-slate-200 hover:text-white hover:border-slate-600 hover:bg-slate-800 transition-all duration-200 active:scale-[0.98]"
+                                className="rounded-xl border border-slate-700 bg-slate-900 px-5 py-2 text-sm font-semibold text-slate-200 transition hover:border-slate-600 hover:bg-slate-800"
                             >
                                 Login
                             </Link>
 
                             <Link
                                 to="/register"
-                                className="rounded-xl bg-teal-500 px-4.5 py-2 text-xs sm:text-sm font-semibold text-slate-950 hover:bg-teal-400 shadow-sm transition-all duration-200 active:scale-[0.98]"
+                                className="rounded-xl bg-teal-500 px-5 py-2 text-sm font-semibold text-slate-950 transition hover:bg-teal-400"
                             >
                                 Register
                             </Link>
                         </>
                     ) : (
-                        <>
-                            <button className="relative p-2 rounded-xl text-slate-300 hover:text-teal-400 hover:bg-slate-900 transition-colors">
-
-                                <Bell
-                                    size={20}
-                                />
-
-                                <span className="absolute right-1.5 top-1.5 h-2 w-2 rounded-full bg-teal-400 ring-2 ring-slate-950" />
-
-                            </button>
-                            <UserDropdown user={user} />
-                        </>
+                        <UserDropdown
+                            user={user}
+                            handleLogout={handleLogout}
+                        />
                     )}
 
                 </div>
 
-                {/* Mobile Hamburger Toggle Button */}
+                {/* Mobile Button */}
+
                 <button
                     onClick={() => setIsOpen(!isOpen)}
-                    className="lg:hidden p-2 rounded-xl text-slate-300 hover:text-white hover:bg-slate-900 transition-colors"
-                    aria-label="Toggle Menu"
+                    className="rounded-xl p-2 text-slate-300 transition hover:bg-slate-900 hover:text-white lg:hidden"
                 >
                     {isOpen ? (
                         <X size={26} />
@@ -140,12 +158,13 @@ const Navbar = () => {
 
             </div>
 
-            {/* Mobile Drawer */}
             <MobileMenu
                 isOpen={isOpen}
                 setIsOpen={setIsOpen}
                 navLinks={navLinks}
                 isAuthenticated={isAuthenticated}
+                user={user}
+                handleLogout={handleLogout}
             />
 
         </header>

@@ -1,5 +1,5 @@
 import { createSlice } from "@reduxjs/toolkit";
-import { register, login, logout, getCurrentUser, refreshToken, } from './authThunk.js'
+import { register, login, logout, getCurrentUser, refreshToken, updateUserProfile, updateUserAvatar, deleteAvatar } from './authThunk.js'
 const initialState = {
     user: null,
     accessToken: localStorage.getItem("accessToken") || null,
@@ -95,6 +95,24 @@ const authSlice = createSlice({
 
                 state.isAuthenticated = false;
 
+            })
+            .addCase(updateUserProfile.fulfilled, (state, action) => {
+                state.loading = false;
+                if (action.payload?.user) {
+                    state.user = { ...state.user, ...action.payload.user };
+                }
+            })
+            .addCase(updateUserAvatar.fulfilled, (state, action) => {
+                state.loading = false;
+                if (action.payload?.user) {
+                    state.user = { ...state.user, ...action.payload.user };
+                }
+            })
+            .addCase(deleteAvatar.fulfilled, (state, action) => {
+                state.loading = false;
+                if (action.payload?.user) {
+                    state.user = { ...state.user, ...action.payload.user };
+                }
             })
 
     }

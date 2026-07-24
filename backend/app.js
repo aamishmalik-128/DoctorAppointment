@@ -10,6 +10,7 @@ import doctorRoutes from './routes/doctor.routes.js'
 import adminRoutes from '../backend/routes/admin.routes.js'
 import doctorAppointmentRoute from './routes/apointment.routes.js'
 import prescriptionRoutes from './routes/prescription.route.js'
+import profileRoutes from './routes/profile.routes.js'
 
 
 dotenv.config()
@@ -42,6 +43,7 @@ app.use("/api/doctors", doctorRoutes)
 app.use("/api/admin", adminRoutes)
 app.use('/api/appointment', doctorAppointmentRoute)
 app.use("/api/prescriptions", prescriptionRoutes);
+app.use("/api/profile", profileRoutes);
 app.use(errorHandler)
 
 export default app;

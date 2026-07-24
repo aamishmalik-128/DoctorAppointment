@@ -9,6 +9,9 @@ import Login from './Pages/auth/Login.jsx'
 import { getCurrentUser, refreshToken } from './redux/feature/auth/authThunk.js'
 import ProtectedRoute from './components/auth/ProtectedRoute.jsx'
 import PublicRoute from './components/auth/PublicRoute.jsx'
+import Register from './Pages/auth/RegisterPatient.jsx'
+import Profile from './Pages/patient/Profile.jsx'
+import EditProfile from './Pages/patient/EditProfile.jsx'
 
 const App = () => {
   const dispatch = useDispatch()
@@ -36,10 +39,10 @@ const App = () => {
             element={<Login />}
           />
 
-          {/* <Route
+           <Route
             path="/register"
             element={<Register />}
-          /> */}
+          /> 
 
         </Route>
 
@@ -50,10 +53,14 @@ const App = () => {
             element={<Home />}
           />
 
-          {/* <Route
+           <Route
             path="/profile"
             element={<Profile />}
-          /> */}
+          /> 
+          <Route
+            path="/profile/edit"
+            element={<EditProfile />}
+          /> 
 
         </Route>
 
