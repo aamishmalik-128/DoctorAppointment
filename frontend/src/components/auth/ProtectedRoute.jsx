@@ -20,17 +20,21 @@ const ProtectedRoute = ({ allowedRoles }) => {
 
     // Role-based protection check
     if (allowedRoles && !allowedRoles.includes(user?.role)) {
-        // If a doctor tries to access patient routes, redirect to doctor dashboard
         if (user?.role === "doctor") {
             return <Navigate to="/doctor" replace />;
         }
-        // If a patient tries to access doctor routes, redirect to patient home
+        if (user?.role === "admin") {
+            return <Navigate to="/admin" replace />;
+        }
         return <Navigate to="/" replace />;
     }
 
-    // Fallback: If no allowedRoles specified, doctors can never access patient routes
+    // Fallbacks
     if (user?.role === "doctor" && !allowedRoles) {
         return <Navigate to="/doctor" replace />;
+    }
+    if (user?.role === "admin" && !allowedRoles) {
+        return <Navigate to="/admin" replace />;
     }
 
     return <Outlet />;
