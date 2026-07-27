@@ -6,7 +6,18 @@ import * as doctorService from '../services/doctorServices.js'
 export const registerDoctor=async(req,res,next)=>{
     try{
         const result = await doctorService.registerDoctor(req.body)
-        console.log(result)
+        res.cookie('refreshToken', result.refreshToken, {
+            httpOnly: true,
+            secure: false,
+            sameSite: 'strict',
+            maxAge: 7 * 24 * 60 * 60 * 1000
+        });
+        return res.status(201).json({
+            success: true,
+            message: "Doctor account registered successfully",
+            accessToken: result.accessToken,
+            user: result.user,
+        });
     }catch(error){
         next(error)
     }

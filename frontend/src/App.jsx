@@ -6,10 +6,12 @@ import { useDispatch } from 'react-redux'
 import { useEffect } from 'react'
 import Navbar from './components/layout/Navbar.jsx'
 import Login from './Pages/auth/Login.jsx'
+import LoginDoctor from './Pages/auth/LoginDoctor.jsx'
 import { getCurrentUser, refreshToken } from './redux/feature/auth/authThunk.js'
 import ProtectedRoute from './components/auth/ProtectedRoute.jsx'
 import PublicRoute from './components/auth/PublicRoute.jsx'
 import Register from './Pages/auth/RegisterPatient.jsx'
+import RegisterDoctor from './Pages/auth/RegisterDoctor.jsx'
 import Profile from './Pages/patient/Profile.jsx'
 import EditProfile from './Pages/patient/EditProfile.jsx'
 import ChangePassword from './Pages/patient/ChangePassword.jsx'
@@ -39,11 +41,24 @@ const App = () => {
             path="/login"
             element={<Login />}
           />
+          <Route
+            path="/doctor/login"
+            element={<LoginDoctor />}
+          />
+          <Route
+            path="/login/doctor"
+            element={<LoginDoctor />}
+          />
 
-           <Route
+          <Route
             path="/register"
             element={<Register />}
-          /> 
+          />
+          <Route
+            path="/doctor/register"
+            element={<RegisterDoctor />}
+          />
+
 
         </Route>
 
@@ -54,18 +69,18 @@ const App = () => {
             element={<Home />}
           />
 
-           <Route
+          <Route
             path="/profile"
             element={<Profile />}
-          /> 
+          />
           <Route
             path="/profile/edit"
             element={<EditProfile />}
-          /> 
+          />
           <Route
             path="/profile/change-password"
             element={<ChangePassword />}
-          /> 
+          />
 
         </Route>
 

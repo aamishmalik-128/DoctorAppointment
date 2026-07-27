@@ -81,7 +81,7 @@ export const updateDoctorProfile = async (userId, doctorData) => {
         "experience",
         "consultationFee",
         "hospital",
-        "clinicAddress",
+        "clinicalAddress",
         "bio",
         "availableDays",
         "availableTime",

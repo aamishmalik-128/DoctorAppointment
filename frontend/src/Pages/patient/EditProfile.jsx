@@ -59,18 +59,16 @@ const EditProfile = () => {
         setSuccessMsg("");
 
         try {
-            // 1. Upload avatar if selected
             if (avatar) {
                 await dispatch(updateUserAvatar(avatar)).unwrap();
             }
 
-            // 2. Update text profile fields
             await dispatch(updateUserProfile(formData)).unwrap();
 
             setSuccessMsg("Profile updated successfully!");
             setTimeout(() => {
                 navigate("/profile");
-            }, 1200);
+            }, 1000);
         } catch (err) {
             setErrorMsg(typeof err === "string" ? err : err.message || "Failed to update profile");
         } finally {
@@ -93,150 +91,159 @@ const EditProfile = () => {
             setLoading(false);
         }
     };
+
     return (
-        <div className="min-h-screen bg-slate-950 px-4 py-10 text-white">
-            <div className="mx-auto max-w-3xl rounded-2xl border border-slate-800 bg-slate-900 shadow-xl overflow-hidden">
-                <div className="flex items-center justify-between border-b border-slate-800 p-6 sm:p-8">
+        <div className="relative min-h-[calc(100vh-5rem)] bg-gradient-to-br from-slate-50 via-teal-50/60 to-emerald-50 text-slate-800 flex items-center justify-center py-6 px-4 sm:px-6 lg:px-8">
+            {/* Pattern Accent & Ambient Glow */}
+            <div className="absolute top-0 left-0 w-full h-full bg-[radial-gradient(#0d9488_1px,transparent_1px)] [background-size:24px_24px] opacity-10 pointer-events-none" />
+            <div className="absolute top-10 left-1/4 h-80 w-80 rounded-full bg-teal-300/25 blur-3xl pointer-events-none" />
+            <div className="absolute bottom-10 right-1/4 h-80 w-80 rounded-full bg-emerald-300/20 blur-3xl pointer-events-none" />
+
+            <div className="relative z-10 mx-auto w-full max-w-2xl rounded-3xl border border-teal-100 bg-white/95 shadow-xl backdrop-blur-xl overflow-hidden text-slate-900 flex flex-col justify-between max-h-[calc(100vh-6rem)] overflow-y-auto">
+                <div className="flex items-center justify-between border-b border-teal-100 py-3.5 px-6 bg-teal-50/30 shrink-0">
                     <div>
-                        <h1 className="text-2xl sm:text-3xl font-bold">Edit Profile</h1>
-                        <p className="mt-1 text-sm text-slate-400">
+                        <h1 className="text-lg sm:text-xl font-extrabold text-slate-900">Edit Profile</h1>
+                        <p className="text-[11px] text-slate-500">
                             Update your personal information and profile picture.
                         </p>
                     </div>
                     <button
                         onClick={() => navigate("/profile")}
-                        className="flex items-center gap-2 rounded-xl border border-slate-700 bg-slate-800 px-4 py-2 text-sm font-semibold text-slate-300 hover:bg-slate-700 transition"
+                        className="flex items-center gap-1.5 rounded-xl border border-teal-200 bg-white px-3 py-1.5 text-xs font-semibold text-teal-700 hover:bg-teal-50 transition shadow-xs cursor-pointer"
                     >
-                        <ArrowLeft size={16} /> Back
+                        <ArrowLeft size={14} /> Back
                     </button>
                 </div>
 
-                <form onSubmit={handleSubmit} className="space-y-6 p-6 sm:p-8">
+                <form onSubmit={handleSubmit} className="space-y-3 p-4 sm:p-5 overflow-y-auto">
                     {/* Status Feedback Messages */}
                     {errorMsg && (
-                        <div className="flex items-center gap-3 rounded-xl border border-red-500/30 bg-red-500/10 p-4 text-sm text-red-400">
-                            <AlertCircle size={20} className="shrink-0" />
+                        <div className="flex items-center gap-2 rounded-xl border border-rose-200 bg-rose-50 p-2.5 text-xs text-rose-600 font-semibold">
+                            <AlertCircle size={16} className="shrink-0" />
                             <span>{errorMsg}</span>
                         </div>
                     )}
 
                     {successMsg && (
-                        <div className="flex items-center gap-3 rounded-xl border border-emerald-500/30 bg-emerald-500/10 p-4 text-sm text-emerald-400">
-                            <CheckCircle size={20} className="shrink-0" />
+                        <div className="flex items-center gap-2 rounded-xl border border-emerald-200 bg-emerald-50 p-2.5 text-xs text-emerald-700 font-semibold">
+                            <CheckCircle size={16} className="shrink-0" />
                             <span>{successMsg}</span>
                         </div>
                     )}
 
-                    {/* Avatar Upload */}
-                    <div className="flex flex-col items-center">
+                    {/* Avatar Upload Header Row */}
+                    <div className="flex items-center justify-center gap-3 py-1">
                         {preview ? (
                             <img
                                 src={preview}
                                 alt="avatar preview"
-                                className="h-28 w-28 rounded-full border-4 border-teal-500 object-cover shadow-lg"
+                                className="h-14 w-14 rounded-full border-2 border-teal-500 object-cover shadow-sm"
                             />
                         ) : (
-                            <div className="flex h-28 w-28 items-center justify-center rounded-full bg-gradient-to-br from-teal-500 to-cyan-500 text-5xl font-bold text-slate-950 shadow-lg">
+                            <div className="flex h-14 w-14 items-center justify-center rounded-full bg-gradient-to-br from-teal-500 to-emerald-500 text-xl font-extrabold text-white shadow-sm">
                                 {user?.fullName?.charAt(0).toUpperCase() || "U"}
                             </div>
                         )}
 
-                        <label className="mt-4 flex cursor-pointer items-center gap-2 rounded-xl border border-slate-700 bg-slate-800 px-4 py-2.5 text-sm font-medium hover:bg-slate-700 transition">
-                            <Upload size={18} className="text-teal-400" />
-                            <span>Change Profile Picture</span>
-                            <input
-                                type="file"
-                                hidden
-                                accept="image/*"
-                                onChange={handleImage}
-                            />
-                        </label>
-                        {preview && (
-
+                        <div className="flex items-center gap-2">
+                            <label className="flex cursor-pointer items-center gap-1.5 rounded-xl border border-teal-200 bg-teal-50/50 px-3 py-1.5 text-xs font-semibold text-teal-700 hover:bg-teal-100 transition shadow-xs">
+                                <Upload size={14} className="text-teal-600" />
+                                <span>Change Photo</span>
+                                <input
+                                    type="file"
+                                    hidden
+                                    accept="image/*"
+                                    onChange={handleImage}
+                                />
+                            </label>
+                            {preview && (
                                 <button
                                     type="button"
                                     onClick={handleDeleteAvatar}
-                                    className="mt-3 rounded-lg bg-red-600 px-4 py-2 text-sm hover:bg-red-700"
+                                    className="rounded-xl bg-rose-50 border border-rose-200 px-3 py-1.5 text-xs font-semibold text-rose-600 hover:bg-rose-600 hover:text-white transition cursor-pointer"
                                 >
-                                    Remove Avatar
+                                    Remove
                                 </button>
-
                             )}
+                        </div>
                     </div>
 
-                    {/* Full Name */}
-                    <Input
-                        icon={<User size={18} />}
-                        label="Full Name"
-                        name="fullName"
-                        value={formData.fullName}
-                        onChange={handleChange}
-                        required
-                    />
-
-                    {/* Phone */}
-                    <Input
-                        icon={<Phone size={18} />}
-                        label="Phone Number"
-                        name="phone"
-                        value={formData.phone}
-                        onChange={handleChange}
-                        placeholder="+1 234 567 890"
-                    />
-
-                    {/* Gender */}
-                    <div>
-                        <label className="mb-2 block text-sm font-medium text-slate-400">
-                            Gender
-                        </label>
-                        <select
-                            name="gender"
-                            value={formData.gender}
+                    {/* 2 Column Form Inputs */}
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+                        {/* Full Name */}
+                        <Input
+                            icon={<User size={14} />}
+                            label="Full Name"
+                            name="fullName"
+                            value={formData.fullName}
                             onChange={handleChange}
-                            className="w-full rounded-xl border border-slate-700 bg-slate-950 px-4 py-3 text-white outline-none focus:border-teal-500 transition"
-                        >
-                            <option value="">Select Gender</option>
-                            <option value="male">Male</option>
-                            <option value="female">Female</option>
-                            <option value="other">Other</option>
-                        </select>
-                    </div>
-
-                    {/* DOB */}
-                    <Input
-                        icon={<Calendar size={18} />}
-                        label="Date of Birth"
-                        type="date"
-                        name="dateOfBirth"
-                        value={formData.dateOfBirth}
-                        onChange={handleChange}
-                    />
-
-                    {/* Address */}
-                    <div>
-                        <label className="mb-2 flex items-center gap-2 text-sm font-medium text-slate-400">
-                            <MapPin size={18} />
-                            Address
-                        </label>
-                        <textarea
-                            rows={3}
-                            name="address"
-                            value={formData.address}
-                            onChange={handleChange}
-                            placeholder="Enter your current address"
-                            className="w-full rounded-xl border border-slate-700 bg-slate-950 px-4 py-3 text-white outline-none focus:border-teal-500 transition"
+                            required
                         />
+
+                        {/* Phone */}
+                        <Input
+                            icon={<Phone size={14} />}
+                            label="Phone Number"
+                            name="phone"
+                            value={formData.phone}
+                            onChange={handleChange}
+                            placeholder="+92 300 1234567"
+                        />
+
+                        {/* Gender */}
+                        <div>
+                            <label className="mb-1 block text-[11px] font-bold text-slate-700">
+                                Gender
+                            </label>
+                            <select
+                                name="gender"
+                                value={formData.gender}
+                                onChange={handleChange}
+                                className="w-full rounded-xl border border-teal-100 bg-teal-50/20 px-3 py-1.5 text-xs text-slate-800 outline-none focus:border-teal-500 focus:bg-white focus:ring-2 focus:ring-teal-500/20 transition"
+                            >
+                                <option value="">Select Gender</option>
+                                <option value="male">Male</option>
+                                <option value="female">Female</option>
+                                <option value="other">Other</option>
+                            </select>
+                        </div>
+
+                        {/* DOB */}
+                        <Input
+                            icon={<Calendar size={14} />}
+                            label="Date of Birth"
+                            type="date"
+                            name="dateOfBirth"
+                            value={formData.dateOfBirth}
+                            onChange={handleChange}
+                        />
+
+                        {/* Address */}
+                        <div className="sm:col-span-2">
+                            <label className="mb-1 flex items-center gap-1 text-[11px] font-bold text-slate-700">
+                                <MapPin size={14} className="text-teal-600" />
+                                Address
+                            </label>
+                            <textarea
+                                rows={2}
+                                name="address"
+                                value={formData.address}
+                                onChange={handleChange}
+                                placeholder="Enter your current address"
+                                className="w-full rounded-xl border border-teal-100 bg-teal-50/20 px-3 py-1.5 text-xs text-slate-800 outline-none focus:border-teal-500 focus:bg-white focus:ring-2 focus:ring-teal-500/20 transition resize-none"
+                            />
+                        </div>
                     </div>
 
                     {/* Submit Button */}
                     <button
                         type="submit"
                         disabled={loading}
-                        className="flex w-full items-center justify-center gap-2 rounded-xl bg-teal-500 py-3.5 font-bold text-slate-950 transition hover:bg-teal-400 active:scale-[0.99] disabled:opacity-50 disabled:cursor-not-allowed shadow-md"
+                        className="flex w-full items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-teal-600 to-emerald-600 hover:from-teal-700 hover:to-emerald-700 py-2.5 font-bold text-white shadow-md shadow-teal-600/20 transition-all duration-200 active:scale-[0.99] disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer text-xs sm:text-sm"
                     >
                         {loading ? (
                             <>
-                                <Loader2 size={20} className="animate-spin" />
+                                <Loader2 size={16} className="animate-spin text-white" />
                                 <span>Saving Changes...</span>
                             </>
                         ) : (
@@ -251,14 +258,14 @@ const EditProfile = () => {
 
 const Input = ({ icon, label, type = "text", ...props }) => (
     <div>
-        <label className="mb-2 flex items-center gap-2 text-sm font-medium text-slate-400">
-            {icon}
+        <label className="mb-1 flex items-center gap-1 text-[11px] font-bold text-slate-700">
+            <span className="text-teal-600">{icon}</span>
             {label}
         </label>
         <input
             type={type}
             {...props}
-            className="w-full rounded-xl border border-slate-700 bg-slate-950 px-4 py-3 text-white outline-none focus:border-teal-500 transition"
+            className="w-full rounded-xl border border-teal-100 bg-teal-50/20 px-3 py-1.5 text-xs text-slate-800 outline-none focus:border-teal-500 focus:bg-white focus:ring-2 focus:ring-teal-500/20 transition"
         />
     </div>
 );

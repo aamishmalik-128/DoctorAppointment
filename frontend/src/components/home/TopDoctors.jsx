@@ -49,7 +49,7 @@ const doctors = [
 
 const TopDoctors = () => {
     return (
-        <section className="relative overflow-hidden bg-gradient-to-r from-slate-900 via-teal-950 to-slate-900 py-20 lg:py-28 text-white">
+        <section className="relative overflow-hidden bg-white py-20 lg:py-28 text-slate-800 border-t border-teal-100/60">
 
             <div className="relative mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
 
@@ -61,19 +61,19 @@ const TopDoctors = () => {
                     transition={{ duration: 0.7, ease: "easeOut" }}
                     className="text-center flex flex-col items-center"
                 >
-                    <span className="inline-flex items-center gap-2 rounded-full bg-teal-500/20 px-4 py-1.5 text-xs font-semibold uppercase tracking-wider text-teal-300 border border-teal-500/30">
-                        <Sparkles size={14} className="text-teal-400" />
+                    <span className="inline-flex items-center gap-2 rounded-full bg-teal-100/80 px-4 py-1.5 text-xs font-semibold uppercase tracking-wider text-teal-800 border border-teal-200/80">
+                        <Sparkles size={14} className="text-teal-600" />
                         Our Specialists
                     </span>
 
-                    <h2 className="mt-6 font-heading font-extrabold text-3xl sm:text-4xl lg:text-5xl text-white tracking-tight leading-tight">
+                    <h2 className="mt-6 font-heading font-extrabold text-3xl sm:text-4xl lg:text-5xl text-slate-900 tracking-tight leading-tight">
                         Meet Our{" "}
-                        <span className="text-teal-400">
+                        <span className="bg-gradient-to-r from-teal-700 via-emerald-600 to-teal-500 bg-clip-text text-transparent">
                             Top Rated Doctors
                         </span>
                     </h2>
 
-                    <p className="mx-auto mt-4 max-w-2xl text-base sm:text-lg leading-relaxed text-slate-200 font-normal">
+                    <p className="mx-auto mt-4 max-w-2xl text-base sm:text-lg leading-relaxed text-slate-600 font-normal">
                         Consult highly experienced and verified doctors across multiple medical specialties.
                     </p>
                 </motion.div>
@@ -93,20 +93,17 @@ const TopDoctors = () => {
                                 delay: index * 0.12,
                                 ease: "easeOut",
                             }}
-                            whileHover={{
-                                y: -6,
-                            }}
-                            className="bg-white rounded-2xl border border-slate-100 p-6 sm:p-7 shadow-xl hover:shadow-2xl hover:border-teal-500/40 transition-all duration-300 flex flex-col justify-between h-full group text-slate-800"
+                            whileHover={{ y: -6 }}
+                            className="bg-white rounded-2xl border border-teal-100 p-6 sm:p-7 shadow-sm hover:shadow-xl hover:border-teal-300 transition-all duration-300 flex flex-col justify-between h-full group text-slate-800"
                         >
 
                             <div>
-                                {/* Top Header Info & Avatar — Reduced Gap */}
                                 <div className="flex items-start gap-3.5 mb-3.5">
                                     <div className="relative shrink-0">
                                         <img
                                             src={doctor.image}
                                             alt={doctor.name}
-                                            className="w-16 h-16 sm:w-18 sm:h-18 rounded-2xl object-cover border border-slate-100 shadow-xs"
+                                            className="w-16 h-16 sm:w-18 sm:h-18 rounded-2xl object-cover border border-teal-100 shadow-xs"
                                         />
                                         <span
                                             className={`absolute -bottom-1 -right-1 w-3.5 h-3.5 rounded-full border-2 border-white ${
@@ -117,10 +114,10 @@ const TopDoctors = () => {
                                     </div>
 
                                     <div className="flex-1 min-w-0 pt-0.5">
-                                        <h3 className="font-heading font-bold text-slate-900 text-base sm:text-lg leading-snug truncate group-hover:text-teal-600 transition-colors">
+                                        <h3 className="font-heading font-bold text-slate-900 text-base sm:text-lg leading-snug truncate group-hover:text-teal-700 transition-colors">
                                             {doctor.name}
                                         </h3>
-                                        <p className="text-teal-600 text-xs sm:text-sm font-bold mt-0.5">
+                                        <p className="text-teal-700 text-xs sm:text-sm font-bold mt-0.5">
                                             {doctor.specialization}
                                         </p>
 
@@ -132,8 +129,7 @@ const TopDoctors = () => {
                                     </div>
                                 </div>
 
-                                {/* Highlights Details Box — Compact Padding & Spacing */}
-                                <div className="space-y-2 py-3 border-y border-slate-100 mb-4 bg-slate-50/80 rounded-xl px-3.5 text-xs text-slate-600">
+                                <div className="space-y-2 py-3 border-y border-teal-100 mb-4 bg-teal-50/40 rounded-xl px-3.5 text-xs text-slate-600">
                                     <div className="flex items-center justify-between">
                                         <span className="flex items-center gap-2 text-slate-500 font-medium">
                                             <BriefcaseMedical size={13} className="text-teal-600 shrink-0" />
@@ -142,7 +138,7 @@ const TopDoctors = () => {
                                         <span className="font-bold text-slate-800">{doctor.experience} Years</span>
                                     </div>
 
-                                    <div className="flex items-center justify-between pt-1 border-t border-slate-200/60">
+                                    <div className="flex items-center justify-between pt-1 border-t border-teal-100/60">
                                         <span className="flex items-center gap-2 text-slate-500 font-medium">
                                             <MapPin size={13} className="text-teal-600 shrink-0" />
                                             Hospital
@@ -150,7 +146,7 @@ const TopDoctors = () => {
                                         <span className="font-bold text-slate-800 truncate max-w-[150px]">{doctor.hospital}</span>
                                     </div>
 
-                                    <div className="flex items-center justify-between pt-1.5 border-t border-slate-200/60">
+                                    <div className="flex items-center justify-between pt-1.5 border-t border-teal-100/60">
                                         <span className={`font-semibold ${doctor.available ? "text-emerald-600" : "text-rose-600"}`}>
                                             {doctor.available ? "● Available Today" : "● Unavailable"}
                                         </span>
@@ -161,12 +157,11 @@ const TopDoctors = () => {
                                 </div>
                             </div>
 
-                            {/* Action Buttons */}
                             <div className="flex items-center gap-2.5 pt-1">
-                                <button className="flex-1 text-center py-2.5 px-3 bg-slate-100 hover:bg-slate-200/80 text-slate-700 text-xs font-bold rounded-xl border border-slate-200 transition-colors">
+                                <button className="flex-1 text-center py-2.5 px-3 bg-teal-50 hover:bg-teal-100 text-teal-800 text-xs font-bold rounded-xl border border-teal-200/60 transition-colors">
                                     View Profile
                                 </button>
-                                <button className="flex-1 inline-flex items-center justify-center gap-1.5 py-2.5 px-3 bg-teal-600 hover:bg-teal-700 text-white text-xs font-bold rounded-xl shadow-xs transition-colors">
+                                <button className="flex-1 inline-flex items-center justify-center gap-1.5 py-2.5 px-3 bg-gradient-to-r from-teal-600 to-emerald-600 hover:from-teal-700 hover:to-emerald-700 text-white text-xs font-bold rounded-xl shadow-xs transition-colors">
                                     Book Now
                                     <CalendarDays size={14} />
                                 </button>
@@ -178,9 +173,8 @@ const TopDoctors = () => {
 
                 </div>
 
-                {/* Bottom CTA */}
                 <div className="mt-14 text-center">
-                    <button className="inline-flex items-center justify-center gap-2 rounded-xl bg-teal-500 hover:bg-teal-400 px-8 py-3.5 text-sm font-semibold text-slate-950 shadow-md transition-all duration-200 active:scale-[0.98]">
+                    <button className="inline-flex items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-teal-600 to-emerald-600 hover:from-teal-700 hover:to-emerald-700 px-8 py-3.5 text-sm font-semibold text-white shadow-md transition-all duration-200 active:scale-[0.98]">
                         View All Doctors
                         <ArrowRight size={18} />
                     </button>
