@@ -1,5 +1,7 @@
-import { useSelector } from "react-redux";
+import { useEffect } from "react";
+import { useDispatch, useSelector } from "react-redux";
 import { useNavigate } from "react-router-dom";
+import { getDoctorProfile } from "../../redux/feature/doctor/doctorThunk";
 import {
     Stethoscope,
     Mail,
@@ -10,16 +12,27 @@ import {
     MapPin,
     ShieldCheck,
     Edit,
+    Building,
     Calendar,
+    FileText,
 } from "lucide-react";
 import { formatDoctorName } from "../../utils/formatDoctorName";
 
 const DoctorProfile = () => {
+    const dispatch = useDispatch();
     const navigate = useNavigate();
-    const { user } = useSelector((state) => state?.auth || {});
+
+    const { user } = useSelector((state) => state.auth || {});
+    const { doctorProfile, profileCompleted, loading } = useSelector(
+        (state) => state.doctor || {}
+    );
+
+    useEffect(() => {
+        dispatch(getDoctorProfile());
+    }, [dispatch]);
 
     return (
-        <div className="space-y-6 text-left">
+        <div className="space-y-6 text-left max-w-4xl mx-auto">
             {/* Header Card */}
             <div className="relative overflow-hidden rounded-3xl border border-teal-100 bg-white/95 p-6 sm:p-8 shadow-xl backdrop-blur-xl">
                 <div className="flex flex-col sm:flex-row items-center sm:items-start gap-6">
@@ -39,27 +52,32 @@ const DoctorProfile = () => {
                         <div className="flex flex-wrap items-center justify-center sm:justify-start gap-2">
                             <span className="inline-flex items-center gap-1.5 rounded-full bg-teal-100/80 px-3 py-1 text-xs font-bold text-teal-800 border border-teal-200">
                                 <Stethoscope size={14} className="text-teal-600" />
-                                {user?.specialization || "General Practitioner"}
+                                {doctorProfile?.specialization || "General Practitioner"}
                             </span>
-                            <span className="inline-flex items-center gap-1 rounded-full bg-emerald-100/80 px-3 py-1 text-xs font-bold text-emerald-800 border border-emerald-200">
-                                <ShieldCheck size={14} className="text-emerald-600" />
-                                Verified Doctor
+
+                            <span className={`inline-flex items-center gap-1 rounded-full px-3 py-1 text-xs font-bold border ${
+                                profileCompleted
+                                    ? "bg-emerald-100/80 text-emerald-800 border-emerald-200"
+                                    : "bg-amber-100/80 text-amber-800 border-amber-200"
+                            }`}>
+                                <ShieldCheck size={14} />
+                                {profileCompleted ? "Profile Complete" : "Profile Pending"}
                             </span>
                         </div>
 
                         <h1 className="text-2xl sm:text-3xl font-extrabold text-slate-900">
-                            {formatDoctorName(user?.fullName)}
+                            {formatDoctorName(user?.fullName || doctorProfile?.fullName)}
                         </h1>
 
                         <p className="text-xs sm:text-sm text-slate-500 max-w-xl">
-                            {user?.bio || "Professional medical practitioner dedicated to providing compassionate patient care and expert clinical diagnostics."}
+                            {doctorProfile?.bio || "Professional medical practitioner dedicated to providing compassionate patient care and expert clinical diagnostics."}
                         </p>
                     </div>
 
                     <div className="flex sm:flex-col gap-2 shrink-0 w-full sm:w-auto">
                         <button
-                            onClick={() => navigate("/doctor/settings")}
-                            className="flex-1 sm:flex-none flex items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-teal-600 to-emerald-600 hover:from-teal-700 hover:to-emerald-700 px-4 py-2.5 text-xs sm:text-sm font-bold text-white shadow-md shadow-teal-600/20 transition-all cursor-pointer"
+                            onClick={() => navigate("/doctor/profile/edit")}
+                            className="flex-1 sm:flex-none flex items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-teal-600 to-emerald-600 hover:from-teal-700 hover:to-emerald-700 px-5 py-2.5 text-xs sm:text-sm font-bold text-white shadow-md shadow-teal-600/20 transition-all cursor-pointer"
                         >
                             <Edit size={15} />
                             Edit Profile
@@ -77,42 +95,49 @@ const DoctorProfile = () => {
 
             {/* Information Grid */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <InfoCard
+                <InfoTile
                     icon={<Mail size={18} />}
                     label="Email Address"
                     value={user?.email}
                 />
-                <InfoCard
+                <InfoTile
                     icon={<Phone size={18} />}
                     label="Phone Number"
                     value={user?.phone || "Not Provided"}
                 />
-                <InfoCard
+                <InfoTile
                     icon={<Award size={18} />}
                     label="Qualifications"
-                    value={user?.qualifications || "MBBS, MD"}
+                    value={doctorProfile?.qualification || "Not Added"}
                 />
-                <InfoCard
+                <InfoTile
                     icon={<Clock size={18} />}
                     label="Experience"
-                    value={user?.experience ? `${user.experience} Years` : "5+ Years"}
+                    value={doctorProfile?.experience ? `${doctorProfile.experience} Years` : "Not Added"}
                 />
-                <InfoCard
+                <InfoTile
                     icon={<DollarSign size={18} />}
                     label="Consultation Fee"
-                    value={user?.fee ? `$${user.fee}` : "$50"}
+                    value={doctorProfile?.consultationFee || doctorProfile?.fee ? `$${doctorProfile.consultationFee || doctorProfile.fee}` : "Not Added"}
                 />
-                <InfoCard
-                    icon={<MapPin size={18} />}
-                    label="Clinic Address"
-                    value={user?.address || "Medical Care Center, Main Suite"}
+                <InfoTile
+                    icon={<Building size={18} />}
+                    label="Hospital / Clinic"
+                    value={doctorProfile?.hospital || "Not Added"}
                 />
+                <div className="md:col-span-2">
+                    <InfoTile
+                        icon={<MapPin size={18} />}
+                        label="Clinical Address"
+                        value={doctorProfile?.clinicalAddress || doctorProfile?.address || "Not Added"}
+                    />
+                </div>
             </div>
         </div>
     );
 };
 
-const InfoCard = ({ icon, label, value }) => (
+const InfoTile = ({ icon, label, value }) => (
     <div className="flex items-center gap-3.5 rounded-2xl border border-teal-100/80 bg-white/95 p-4 shadow-sm backdrop-blur-md hover:border-teal-300 transition-all">
         <div className="rounded-xl bg-teal-500/10 p-2.5 text-teal-700 shrink-0 border border-teal-200/50">
             {icon}

@@ -24,12 +24,6 @@ const availabilitySchema = new mongoose.Schema(
       type: String,
       required: true,
       trim: true,
-      validate: {
-        validator: function (value) {
-          return value > this.startTime;
-        },
-        message: "End time must be after start time.",
-      },
     },
     breakStart: {
       type: String,
@@ -40,6 +34,19 @@ const availabilitySchema = new mongoose.Schema(
       type: String,
       default: "",
       trim: true,
+      validate: {
+        validator: function (value) {
+          if (!this.breakStart || !value) {
+            return true;
+          }
+          return (
+            this.breakStart < value &&
+            this.breakStart >= this.startTime &&
+            value <= this.endTime
+          );
+        },
+        message: "Invalid break time.",
+      },
     },
   },
   {

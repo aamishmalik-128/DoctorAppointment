@@ -79,3 +79,38 @@ export const getDoctorById = async (req,res,next)=>{
         next(error)
     }
 }
+
+
+export const getDoctorAvailability = async (req, res, next) => {
+    try {
+
+        const availability = await doctorService.getDoctorAvailability(req.user.id);
+
+        return res.status(200).json({
+            success: true,
+            availability,
+        });
+
+    } catch (error) {
+        next(error);
+    }
+};
+
+export const updateDoctorAvailability = async (req, res, next) => {
+    try {
+
+        const availability = await doctorService.updateDoctorAvailability(
+            req.user.id,
+            req.body.availability
+        );
+
+        return res.status(200).json({
+            success: true,
+            message: "Availability updated successfully.",
+            availability,
+        });
+
+    } catch (error) {
+        next(error);
+    }
+};

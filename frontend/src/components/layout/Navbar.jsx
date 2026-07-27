@@ -19,10 +19,11 @@ const Navbar = () => {
         (state) => state.auth || {}
     );
 
-    // Do not render Navbar on login or register pages
+    // Do not render Navbar on login, register, or doctor pages
     const isAuthPage =
         location.pathname.startsWith("/login") ||
         location.pathname.startsWith("/register") ||
+        location.pathname.startsWith("/doctor") ||
         location.pathname.includes("register") ||
         location.pathname.includes("login");
 

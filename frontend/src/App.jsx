@@ -1,4 +1,3 @@
-
 import React from 'react'
 import { BrowserRouter, Routes, Route } from 'react-router-dom'
 import Home from './Pages/public/Home.jsx'
@@ -7,7 +6,7 @@ import { useEffect } from 'react'
 import Navbar from './components/layout/Navbar.jsx'
 import Login from './Pages/auth/Login.jsx'
 import LoginDoctor from './Pages/auth/LoginDoctor.jsx'
-import { getCurrentUser, refreshToken } from './redux/feature/auth/authThunk.js'
+import { getCurrentUser } from './redux/feature/auth/authThunk.js'
 import ProtectedRoute from './components/auth/ProtectedRoute.jsx'
 import PublicRoute from './components/auth/PublicRoute.jsx'
 import Register from './Pages/auth/RegisterPatient.jsx'
@@ -15,6 +14,13 @@ import RegisterDoctor from './Pages/auth/RegisterDoctor.jsx'
 import Profile from './Pages/patient/Profile.jsx'
 import EditProfile from './Pages/patient/EditProfile.jsx'
 import ChangePassword from './Pages/patient/ChangePassword.jsx'
+import DashboardLayout from './components/doctor/DashboardLayout.jsx'
+import DashboardHome from './Pages/doctor/DashboardHome.jsx'
+import DoctorProfile from './Pages/doctor/DoctorProfile.jsx'
+import DoctorEditProfile from './Pages/doctor/EditProfile.jsx'
+import Availability from './Pages/doctor/Availability.jsx'
+import Patients from './Pages/doctor/Patients.jsx'
+import Settings from './Pages/doctor/Settings.jsx'
 
 const App = () => {
   const dispatch = useDispatch()
@@ -30,13 +36,14 @@ const App = () => {
 
     initializeAuth();
   }, [dispatch]);
+
   return (
     <BrowserRouter>
       <Navbar />
       <Routes>
 
+        {/* Public Guest Routes */}
         <Route element={<PublicRoute />}>
-
           <Route
             path="/login"
             element={<Login />}
@@ -49,7 +56,6 @@ const App = () => {
             path="/login/doctor"
             element={<LoginDoctor />}
           />
-
           <Route
             path="/register"
             element={<Register />}
@@ -58,17 +64,14 @@ const App = () => {
             path="/doctor/register"
             element={<RegisterDoctor />}
           />
-
-
         </Route>
 
-        <Route element={<ProtectedRoute />}>
-
+        {/* Protected Patient Routes (Doctors strictly blocked) */}
+        <Route element={<ProtectedRoute allowedRoles={["patient"]} />}>
           <Route
             path="/"
             element={<Home />}
           />
-
           <Route
             path="/profile"
             element={<Profile />}
@@ -81,11 +84,21 @@ const App = () => {
             path="/profile/change-password"
             element={<ChangePassword />}
           />
+        </Route>
 
+        {/* Protected Doctor Routes (Patients strictly blocked) */}
+        <Route element={<ProtectedRoute allowedRoles={["doctor"]} />}>
+          <Route path='/doctor' element={<DashboardLayout />}>
+            <Route index element={<DashboardHome />} />
+            <Route path='profile' element={<DoctorProfile />} />
+            <Route path='profile/edit' element={<DoctorEditProfile />} />
+            <Route path='availability' element={<Availability />} />
+            <Route path='patients' element={<Patients />} />
+            <Route path='settings' element={<Settings />} />
+          </Route>
         </Route>
 
       </Routes>
-
     </BrowserRouter>
   )
 }
