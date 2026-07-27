@@ -16,12 +16,18 @@ import EditProfile from './Pages/patient/EditProfile.jsx'
 import ChangePassword from './Pages/patient/ChangePassword.jsx'
 import MyAppointments from './Pages/patient/MyAppointments.jsx'
 import AppointmentDetails from './Pages/patient/AppointmentDetails.jsx'
+import MyPrescriptions from './Pages/patient/MyPrescriptions.jsx'
+import PrescriptionDetails from './Pages/patient/PrescriptionDetails.jsx'
+
 import DashboardLayout from './components/doctor/DashboardLayout.jsx'
 import DashboardHome from './Pages/doctor/DashboardHome.jsx'
 import DoctorProfile from './Pages/doctor/DoctorProfile.jsx'
 import DoctorEditProfile from './Pages/doctor/EditProfile.jsx'
 import Availability from './Pages/doctor/Availability.jsx'
 import DoctorAppointments from './Pages/doctor/MyAppointments.jsx'
+import DoctorPrescriptions from './Pages/doctor/MyPrescriptions.jsx'
+import CreatePrescription from './Pages/doctor/CreatePrescription.jsx'
+import EditPrescription from './Pages/doctor/EditPrescription.jsx'
 import Patients from './Pages/doctor/Patients.jsx'
 import Settings from './Pages/doctor/Settings.jsx'
 
@@ -99,6 +105,18 @@ const App = () => {
             path="/appointments/:id"
             element={<AppointmentDetails />}
           />
+          <Route
+            path="/my-prescriptions"
+            element={<MyPrescriptions />}
+          />
+          <Route
+            path="/prescriptions"
+            element={<MyPrescriptions />}
+          />
+          <Route
+            path="/prescriptions/:id"
+            element={<PrescriptionDetails />}
+          />
         </Route>
 
         {/* Protected Doctor Routes (Patients strictly blocked) */}
@@ -110,6 +128,10 @@ const App = () => {
             <Route path='availability' element={<Availability />} />
             <Route path='appointments' element={<DoctorAppointments />} />
             <Route path='appointments/:id' element={<AppointmentDetails />} />
+            <Route path='prescriptions' element={<DoctorPrescriptions />} />
+            <Route path='prescriptions/create' element={<CreatePrescription />} />
+            <Route path='prescriptions/:id' element={<PrescriptionDetails />} />
+            <Route path='prescriptions/:id/edit' element={<EditPrescription />} />
             <Route path='patients' element={<Patients />} />
             <Route path='settings' element={<Settings />} />
           </Route>

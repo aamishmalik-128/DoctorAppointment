@@ -3,7 +3,8 @@ import {
     Bell,
     ChevronDown,
     User,
-    LayoutDashboard,
+    Calendar,
+    FileText,
     LogOut,
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
@@ -31,6 +32,8 @@ const UserDropdown = ({ user, handleLogout }) => {
                 handleOutsideClick
             );
     }, []);
+
+    const isDoctor = user?.role === "doctor";
 
     return (
         <div
@@ -86,11 +89,11 @@ const UserDropdown = ({ user, handleLogout }) => {
                                 </div>
                             )}
 
-                            <div className="overflow-hidden">
+                            <div className="overflow-hidden text-left">
                                 <h2 className="font-semibold text-slate-900 truncate">
                                     {user?.fullName}
                                 </h2>
-                                <p className="text-sm text-slate-500 truncate">
+                                <p className="text-xs text-slate-500 truncate">
                                     {user?.email}
                                 </p>
                                 <span className="text-xs font-semibold capitalize text-teal-700">
@@ -103,7 +106,7 @@ const UserDropdown = ({ user, handleLogout }) => {
                     {/* Menu Items */}
                     <button
                         onClick={() => {
-                            navigate("/profile");
+                            navigate(isDoctor ? "/doctor/profile" : "/profile");
                             setOpen(false);
                         }}
                         className="flex w-full items-center gap-3 px-5 py-3 text-sm font-medium text-slate-700 transition hover:bg-teal-50 hover:text-teal-700 cursor-pointer"
@@ -114,13 +117,24 @@ const UserDropdown = ({ user, handleLogout }) => {
 
                     <button
                         onClick={() => {
-                            navigate("/dashboard");
+                            navigate(isDoctor ? "/doctor/appointments" : "/my-appointments");
                             setOpen(false);
                         }}
                         className="flex w-full items-center gap-3 px-5 py-3 text-sm font-medium text-slate-700 transition hover:bg-teal-50 hover:text-teal-700 cursor-pointer"
                     >
-                        <LayoutDashboard size={18} className="text-teal-600" />
-                        Dashboard
+                        <Calendar size={18} className="text-teal-600" />
+                        My Appointments
+                    </button>
+
+                    <button
+                        onClick={() => {
+                            navigate(isDoctor ? "/doctor/prescriptions" : "/my-prescriptions");
+                            setOpen(false);
+                        }}
+                        className="flex w-full items-center gap-3 px-5 py-3 text-sm font-medium text-slate-700 transition hover:bg-teal-50 hover:text-teal-700 cursor-pointer"
+                    >
+                        <FileText size={18} className="text-teal-600" />
+                        My Prescriptions
                     </button>
 
                     <button

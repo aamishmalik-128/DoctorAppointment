@@ -5,6 +5,7 @@ import {
     User,
     CalendarDays,
     ClipboardList,
+    FileText,
     Users,
     Settings,
     LogOut,
@@ -33,6 +34,11 @@ const menuItems = [
         name: "Appointments",
         icon: ClipboardList,
         path: "/doctor/appointments",
+    },
+    {
+        name: "Prescriptions",
+        icon: FileText,
+        path: "/doctor/prescriptions",
     },
     {
         name: "Patients",

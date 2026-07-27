@@ -5,8 +5,9 @@ import AppError from "../utils/AppError.js";
 
 
 export const createPrescription =async(userId,prescriptionData)=>{
-    const {appointmentId,diagnosis,medications,tests,advice,followUpdate}=prescriptionData;
-    if(!!appointmentId || !diagnosis){
+    const {appointmentId,diagnosis,medications,tests,advice,followUpDate,followUpdate}=prescriptionData;
+    const finalFollowUp = followUpDate || followUpdate;
+    if(!appointmentId || !diagnosis){
         throw new AppError("Appointment and diagnosis are required",400)
     }
 
@@ -74,7 +75,7 @@ export const createPrescription =async(userId,prescriptionData)=>{
 }
 
 
-export const getDoctorPrescriptions = async (userId, query) => {
+export const getDoctorPrescriptions = async (userId, query = {}) => {
     const doctor = await Doctor.findOne({ user: userId });
 
     if (!doctor) {
@@ -253,8 +254,8 @@ export const updatePrescription = async (
 };
 
 
-export const getMyPrescriptions = async (userId, query) => {
-    const { page = 1, limit = 10 } = query;
+export const getMyPrescriptions = async (userId, query = {}) => {
+    const { page = 1, limit = 10 } = query || {};
 
     const pageNumber = Number(page);
     const limitNumber = Number(limit);
