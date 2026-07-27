@@ -1,6 +1,13 @@
 import React from 'react'
 import { BrowserRouter, Routes, Route } from 'react-router-dom'
 import Home from './Pages/public/Home.jsx'
+import DoctorsPage from './Pages/public/Doctor.jsx'
+import DoctorDetail from './Pages/public/DoctorDetail.jsx'
+import Specialties from './Pages/public/Specialties.jsx'
+import About from './Pages/public/About.jsx'
+import Contact from './Pages/public/Contact.jsx'
+import NotFound from './Pages/public/NotFound.jsx'
+
 import { useDispatch } from 'react-redux'
 import { useEffect } from 'react'
 import Navbar from './components/layout/Navbar.jsx'
@@ -11,6 +18,8 @@ import ProtectedRoute from './components/auth/ProtectedRoute.jsx'
 import PublicRoute from './components/auth/PublicRoute.jsx'
 import Register from './Pages/auth/RegisterPatient.jsx'
 import RegisterDoctor from './Pages/auth/RegisterDoctor.jsx'
+
+// Patient Pages
 import Profile from './Pages/patient/Profile.jsx'
 import EditProfile from './Pages/patient/EditProfile.jsx'
 import ChangePassword from './Pages/patient/ChangePassword.jsx'
@@ -19,6 +28,7 @@ import AppointmentDetails from './Pages/patient/AppointmentDetails.jsx'
 import MyPrescriptions from './Pages/patient/MyPrescriptions.jsx'
 import PrescriptionDetails from './Pages/patient/PrescriptionDetails.jsx'
 
+// Doctor Pages
 import DashboardLayout from './components/doctor/DashboardLayout.jsx'
 import DashboardHome from './Pages/doctor/DashboardHome.jsx'
 import DoctorProfile from './Pages/doctor/DoctorProfile.jsx'
@@ -30,6 +40,13 @@ import CreatePrescription from './Pages/doctor/CreatePrescription.jsx'
 import EditPrescription from './Pages/doctor/EditPrescription.jsx'
 import Patients from './Pages/doctor/Patients.jsx'
 import Settings from './Pages/doctor/Settings.jsx'
+
+// Admin Components & Pages
+import AdminDashboardLayout from './components/admin/DashboardLayout.jsx'
+import AdminDashboardHome from './Pages/admin/DashboardHome.jsx'
+import PendingDoctors from './Pages/admin/PendingDoctors.jsx'
+import AllDoctors from './Pages/admin/AllDoctors.jsx'
+import AllUsers from './Pages/admin/AllUsers.jsx'
 
 const App = () => {
   const dispatch = useDispatch()
@@ -51,7 +68,15 @@ const App = () => {
       <Navbar />
       <Routes>
 
-        {/* Public Guest Routes */}
+        {/* Public Nav Pages accessible by guests & patients */}
+        <Route path="/" element={<Home />} />
+        <Route path="/doctors" element={<DoctorsPage />} />
+        <Route path="/doctors/:id" element={<DoctorDetail />} />
+        <Route path="/specialties" element={<Specialties />} />
+        <Route path="/about" element={<About />} />
+        <Route path="/contact" element={<Contact />} />
+
+        {/* Public Guest Authentication Routes */}
         <Route element={<PublicRoute />}>
           <Route
             path="/login"
@@ -75,12 +100,8 @@ const App = () => {
           />
         </Route>
 
-        {/* Protected Patient Routes (Doctors strictly blocked) */}
+        {/* Protected Patient Routes (Doctors & Admins strictly blocked) */}
         <Route element={<ProtectedRoute allowedRoles={["patient"]} />}>
-          <Route
-            path="/"
-            element={<Home />}
-          />
           <Route
             path="/profile"
             element={<Profile />}
@@ -119,7 +140,7 @@ const App = () => {
           />
         </Route>
 
-        {/* Protected Doctor Routes (Patients strictly blocked) */}
+        {/* Protected Doctor Routes (Patients & Admins strictly blocked) */}
         <Route element={<ProtectedRoute allowedRoles={["doctor"]} />}>
           <Route path='/doctor' element={<DashboardLayout />}>
             <Route index element={<DashboardHome />} />
@@ -136,6 +157,19 @@ const App = () => {
             <Route path='settings' element={<Settings />} />
           </Route>
         </Route>
+
+        {/* Protected Admin Routes */}
+        <Route element={<ProtectedRoute allowedRoles={["admin"]} />}>
+          <Route path='/admin' element={<AdminDashboardLayout />}>
+            <Route index element={<AdminDashboardHome />} />
+            <Route path='doctors/pending' element={<PendingDoctors />} />
+            <Route path='doctors' element={<AllDoctors />} />
+            <Route path='users' element={<AllUsers />} />
+          </Route>
+        </Route>
+
+        {/* Fallback 404 Route */}
+        <Route path="*" element={<NotFound />} />
 
       </Routes>
     </BrowserRouter>

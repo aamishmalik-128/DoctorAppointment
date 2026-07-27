@@ -1,126 +1,113 @@
-import User from '../models/User.js'
-import * as adminServices from '../services/admin.services.js'
+import User from '../models/User.js';
+import * as adminServices from '../services/admin.services.js';
+import * as doctorService from '../services/doctorServices.js';
 
-
-
-export const getPendingDoctors= async(req,res,next)=>{
+export const getPendingDoctors = async (req, res, next) => {
     try {
-        const doctors=await adminServices.getPendingDoctors()
-        return res.status(200).json({
-            success:true,
-            doctors,
-        })
-    } catch (error) {
-        next(error)
-    }
-}
-
-export const approveDoctor = async(req,res,next)=>{
-    try {
-        const doctor = await adminServices.approveDoctor(req.params.id);
-        return res.status(200).json({
-            success:true,
-            message:"Doctor approved Successfully",
-            doctor,
-        })
-    } catch (error) {
-        next(error)
-    }
-}
-
-
-export const rejectedDoctor=async(req,res,next)=>{
-    try {
-        const doctor = await adminServices.rejectDoctor(req.params.id);
-    return res.status(200).json({
-        success:true,
-        message:"Doctor rejected Successfully.",
-        doctor,
-    })
-    } catch (error) {
-        next(error)
-    }
-}
-
-export const getAllDoctors=async(req,res,next)=>{
-    try {
-        const result = await adminServices.getAllDoctors(req.query)
-        return res.status(200).json({
-            success:true,
-            ...result
-        })
-    } catch (error) {
-        next(error)
-    }
-}
-
-export const getAllUser = async(req,res,next)=>{
-   try {
-     const result= await adminServices.getAllUser(req.query)
-     return res.status(200).json({
-        success:true,
-        ...result,
-     })
-   } catch (error) {
-    next(error)
-   }
-} 
-
-export const blockUser = async(req,res,next)=>{
-    try {
-        const user = await adminServices.blockUser(req.user.id,req.params.id)
-        return res.status(200).json({
-            success:true,
-            message:"User Blocked Successfully",
-            user,
-        })
-    } catch (error) {
-        next(error)
-    }
-}
-
-
-export const unblockUser = async (req, res, next) => {
-    try {
-
-        const user = await adminServices.unblockUser(
-            req.params.id
-        );
-
+        const doctors = await adminServices.getPendingDoctors();
         return res.status(200).json({
             success: true,
-            message: "User unblocked successfully.",
-            user,
+            doctors,
         });
-
     } catch (error) {
         next(error);
     }
 };
 
-
-export const getDashBoardStats = async (req,res,next)=>{
+export const approveDoctor = async (req, res, next) => {
     try {
-        const stats = await adminServices.getDashboardStats()
+        const doctor = await adminServices.approveDoctor(req.params.id);
         return res.status(200).json({
-            success:true,
-            stats
-        })
+            success: true,
+            message: "Doctor approved Successfully",
+            doctor,
+        });
     } catch (error) {
-        next(error)
+        next(error);
     }
-}
+};
+
+export const rejectedDoctor = async (req, res, next) => {
+    try {
+        const doctor = await adminServices.rejectDoctor(req.params.id);
+        return res.status(200).json({
+            success: true,
+            message: "Doctor rejected Successfully.",
+            doctor,
+        });
+    } catch (error) {
+        next(error);
+    }
+};
+
+export const getAllDoctors = async (req, res, next) => {
+    try {
+        const result = await adminServices.getAllDoctors(req.query);
+        return res.status(200).json({
+            success: true,
+            ...result,
+        });
+    } catch (error) {
+        next(error);
+    }
+};
+
+export const getAllUser = async (req, res, next) => {
+    try {
+        const result = await adminServices.getAllUser(req.query);
+        return res.status(200).json({
+            success: true,
+            ...result,
+        });
+    } catch (error) {
+        next(error);
+    }
+};
+
+export const blockUser = async (req, res, next) => {
+    try {
+        const user = await adminServices.blockUser(req.user.id, req.params.id);
+        return res.status(200).json({
+            success: true,
+            message: "User Blocked Successfully",
+            user,
+        });
+    } catch (error) {
+        next(error);
+    }
+};
+
+export const unblockUser = async (req, res, next) => {
+    try {
+        const user = await adminServices.unblockUser(req.params.id);
+        return res.status(200).json({
+            success: true,
+            message: "User unblocked successfully.",
+            user,
+        });
+    } catch (error) {
+        next(error);
+    }
+};
+
+export const getDashBoardStats = async (req, res, next) => {
+    try {
+        const stats = await adminServices.getDashboardStats();
+        return res.status(200).json({
+            success: true,
+            stats,
+        });
+    } catch (error) {
+        next(error);
+    }
+};
 
 export const getAvailableSlots = async (req, res, next) => {
     try {
-
         const { doctorId } = req.params;
         const { date } = req.query;
 
-        const slots = await doctorService.getAvailableSlots(
-            doctorId,
-            date
-        );
+        const slots = await doctorService.getAvailableSlots(doctorId, date);
 
         return res.status(200).json({
             success: true,
@@ -128,7 +115,6 @@ export const getAvailableSlots = async (req, res, next) => {
             day: slots.day,
             slots: slots.availableSlots,
         });
-
     } catch (error) {
         next(error);
     }

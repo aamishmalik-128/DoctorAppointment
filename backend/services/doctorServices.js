@@ -86,23 +86,41 @@ export const updateDoctorProfile = async (userId, doctorData) => {
     return doctor;
 };
 
-export const getAllDoctors = async (query) => {
+const getSpecializationStem = (spec) => {
+    if (!spec || spec === "All Specialties") return "";
+    const clean = spec.trim().toLowerCase();
+    if (clean.includes("cardio")) return "cardio";
+    if (clean.includes("derm")) return "derm";
+    if (clean.includes("neuro")) return "neuro";
+    if (clean.includes("pediatr") || clean.includes("pedia")) return "pedia";
+    if (clean.includes("ortho")) return "ortho";
+    if (clean.includes("general")) return "general";
+    if (clean.includes("gynecol") || clean.includes("gynaecol") || clean.includes("ob-gyn")) return "gyn";
+    if (clean.includes("psychi")) return "psych";
+    if (clean.includes("ophthal")) return "ophthal";
+    if (clean.includes("ent") || clean.includes("otolaryn")) return "ent";
+    return clean.slice(0, 4);
+};
+
+export const getAllDoctors = async (query = {}) => {
     const {
         page = 1,
-        limit = 10,
+        limit = 20,
         specialization,
         hospital,
+        search,
         minFee,
         maxFee,
-    } = query;
+    } = query || {};
 
     const filter = {
         status: "approved",
     };
 
-    if (specialization) {
+    if (specialization && specialization !== "All Specialties") {
+        const stem = getSpecializationStem(specialization);
         filter.specialization = {
-            $regex: specialization,
+            $regex: stem || specialization,
             $options: "i",
         };
     }
@@ -112,6 +130,22 @@ export const getAllDoctors = async (query) => {
             $regex: hospital,
             $options: "i",
         };
+    }
+
+    if (search && search.trim()) {
+        const searchRegex = { $regex: search.trim(), $options: "i" };
+        const matchingUsers = await User.find({
+            fullName: searchRegex,
+        }).select("_id");
+        const userIds = matchingUsers.map((u) => u._id);
+
+        filter.$or = [
+            { specialization: searchRegex },
+            { hospital: searchRegex },
+            { clinicalAddress: searchRegex },
+            { qualification: searchRegex },
+            { user: { $in: userIds } },
+        ];
     }
 
     if (minFee || maxFee) {

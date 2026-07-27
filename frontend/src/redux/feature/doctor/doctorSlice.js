@@ -6,6 +6,8 @@ import {
     updateDoctorProfile,
     getDoctorAvailability,
     updateDoctorAvailability,
+    fetchPublicDoctors,
+    getPublicDoctorById,
 } from "./doctorThunk";
 
 const initialState = {
@@ -15,6 +17,13 @@ const initialState = {
     doctorProfile: null,
     profileCompleted: false,
     availability: [],
+
+    // Public doctors listing state
+    publicDoctors: [],
+    selectedDoctor: null,
+    totalPublicDoctors: 0,
+    currentPublicPage: 1,
+    totalPublicPages: 1,
 };
 
 const doctorSlice = createSlice({
@@ -26,9 +35,43 @@ const doctorSlice = createSlice({
             state.error = null;
             state.success = false;
         },
+        clearSelectedDoctor(state) {
+            state.selectedDoctor = null;
+        },
     },
     extraReducers: (builder) => {
         builder
+            // Public Fetch Doctors
+            .addCase(fetchPublicDoctors.pending, (state) => {
+                state.loading = true;
+                state.error = null;
+            })
+            .addCase(fetchPublicDoctors.fulfilled, (state, action) => {
+                state.loading = false;
+                state.publicDoctors = action.payload.doctors || [];
+                state.totalPublicDoctors = action.payload.totalDoctors || 0;
+                state.currentPublicPage = action.payload.currentPage || 1;
+                state.totalPublicPages = action.payload.totalPages || 1;
+            })
+            .addCase(fetchPublicDoctors.rejected, (state, action) => {
+                state.loading = false;
+                state.error = action.payload;
+            })
+
+            // Public Get Doctor By ID
+            .addCase(getPublicDoctorById.pending, (state) => {
+                state.loading = true;
+                state.error = null;
+            })
+            .addCase(getPublicDoctorById.fulfilled, (state, action) => {
+                state.loading = false;
+                state.selectedDoctor = action.payload;
+            })
+            .addCase(getPublicDoctorById.rejected, (state, action) => {
+                state.loading = false;
+                state.error = action.payload;
+            })
+
             // Register Doctor
             .addCase(registerDoctor.pending, (state) => {
                 state.loading = true;
@@ -123,6 +166,6 @@ const doctorSlice = createSlice({
     },
 });
 
-export const { clearDoctorState } = doctorSlice.actions;
+export const { clearDoctorState, clearSelectedDoctor } = doctorSlice.actions;
 
 export default doctorSlice.reducer;

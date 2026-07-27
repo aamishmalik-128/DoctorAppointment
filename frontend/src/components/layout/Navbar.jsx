@@ -19,11 +19,12 @@ const Navbar = () => {
         (state) => state.auth || {}
     );
 
-    // Do not render Navbar on login, register, or doctor pages
+    // Do not render Navbar on login, register, doctor, or admin pages
     const isAuthPage =
         location.pathname.startsWith("/login") ||
         location.pathname.startsWith("/register") ||
         location.pathname.startsWith("/doctor") ||
+        location.pathname.startsWith("/admin") ||
         location.pathname.includes("register") ||
         location.pathname.includes("login");
 
@@ -42,10 +43,8 @@ const Navbar = () => {
     const handleLogout = async () => {
         try {
             await dispatch(logout()).unwrap();
-
             setIsOpen(false);
-
-            navigate("/login",{replace:true});
+            navigate("/login", { replace: true });
         } catch (error) {
             console.log(error);
         }
@@ -53,7 +52,6 @@ const Navbar = () => {
 
     return (
         <header className="sticky top-0 z-50 border-b border-teal-100/80 bg-white/90 backdrop-blur-md text-slate-800 shadow-sm">
-
             <div className="mx-auto flex h-20 max-w-7xl items-center justify-between px-4 sm:px-6 lg:px-8">
 
                 {/* Logo */}

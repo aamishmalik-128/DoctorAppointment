@@ -4,6 +4,7 @@ import { roleMiddleware } from "../middleware/roleMiddleware.js";
 import {
     createDoctorProfile,
     getAllDoctors,
+    getAvailableSlots,
     getDoctorAvailability,
     getDoctorById,
     getDoctorProfile,
@@ -11,7 +12,6 @@ import {
     updateDoctorAvailability,
     updateDoctorProfile,
 } from "../controllers/doctor.controller.js";
-import { getAvailableSlots } from "../controllers/admin.controller.js";
 
 const router = express.Router();
 
@@ -29,7 +29,7 @@ router.patch("/availability", authMiddleware, roleMiddleware("doctor"), updateDo
 
 // Public list doctors
 router.get("/", getAllDoctors);
-//slot generation
+// Slot generation
 router.get("/:doctorId/available-slots", getAvailableSlots);
 // Dynamic doctor by ID (MUST BE AT THE BOTTOM)
 router.get("/:id", getDoctorById);

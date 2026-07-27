@@ -1,6 +1,21 @@
 import { createAsyncThunk } from "@reduxjs/toolkit";
 import api from "../../../services/axios";
 
+// Patient: Book Appointment
+export const bookAppointment = createAsyncThunk(
+    "appointment/bookAppointment",
+    async (payload, thunkAPI) => {
+        try {
+            const response = await api.post("/appointment", payload);
+            return response.data.appointment;
+        } catch (error) {
+            return thunkAPI.rejectWithValue(
+                error.response?.data?.message || "Failed to book appointment"
+            );
+        }
+    }
+);
+
 // Patient: Get My Appointments
 export const getMyAppointments = createAsyncThunk(
     "appointment/getMyAppointments",

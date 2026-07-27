@@ -1,5 +1,6 @@
 import { createSlice } from "@reduxjs/toolkit";
 import {
+    bookAppointment,
     getMyAppointments,
     getDoctorAppointments,
     getAppointmentById,
@@ -27,6 +28,23 @@ const appointmentSlice = createSlice({
 
     extraReducers: (builder) => {
         builder
+            // Book Appointment
+            .addCase(bookAppointment.pending, (state) => {
+                state.loading = true;
+                state.error = null;
+            })
+            .addCase(bookAppointment.fulfilled, (state, action) => {
+                state.loading = false;
+                if (action.payload) {
+                    state.appointments.unshift(action.payload);
+                    state.appointment = action.payload;
+                }
+            })
+            .addCase(bookAppointment.rejected, (state, action) => {
+                state.loading = false;
+                state.error = action.payload;
+            })
+
             // Get My Appointments (Patient)
             .addCase(getMyAppointments.pending, (state) => {
                 state.loading = true;
