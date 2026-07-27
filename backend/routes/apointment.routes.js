@@ -25,4 +25,6 @@ router.patch("/appointments/:id/confirm",authMiddleware,roleMiddleware("doctor")
 router.patch("/appointments/:id/reject",authMiddleware,roleMiddleware("doctor"),rejectAppointment);
 router.patch("/appointments/:id/complete",authMiddleware,roleMiddleware("doctor"),completeAppointment);
 router.patch("/appointments/:id/reschedule",authMiddleware,roleMiddleware("doctor"),rescheduleAppointment);
+router.post("/",authMiddleware,roleMiddleware("patient"),bookAppointment);
+router.get("/my",authMiddleware,roleMiddleware("patient"),getMyAppointments);
 export default router

@@ -110,3 +110,26 @@ export const getDashBoardStats = async (req,res,next)=>{
         next(error)
     }
 }
+
+export const getAvailableSlots = async (req, res, next) => {
+    try {
+
+        const { doctorId } = req.params;
+        const { date } = req.query;
+
+        const slots = await doctorService.getAvailableSlots(
+            doctorId,
+            date
+        );
+
+        return res.status(200).json({
+            success: true,
+            date,
+            day: slots.day,
+            slots: slots.availableSlots,
+        });
+
+    } catch (error) {
+        next(error);
+    }
+};

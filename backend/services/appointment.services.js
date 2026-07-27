@@ -1,256 +1,275 @@
 import Doctor from "../models/Doctor.js";
 import AppError from "../utils/AppError.js";
 import Appointment from "../models/Appointment.js";
-import {getDayName,convertToMinutes,getAppointmentMinutes,} from "../utils/appointment.js";
+import {
+    getDayName,
+    convertToMinutes,
+    getAppointmentMinutes,
+    calculateAppointmentEndTime,
+    isTimeWithinWorkingHours,
+    isBreakTime,
+    hasTimeOverlap,
+} from "../utils/appointment.js";
 import { APPOINTMENT_STATUS } from "../constants/appointmentStatus.js";
 
+// 1. Book an Appointment
+export const bookAppointment = async (patientId, appointmentData) => {
+    const { doctorId, appointmentDateTime, consultationType, notes } = appointmentData;
 
-//booking an appointment
-export const  bookAppointment = async(patientId,appointmentData)=>{
-
-    const {doctorId,appointmentDateTime,consultationType,notes}=appointmentData;
-
-    if(!doctorId || !appointmentDateTime){
-        throw new AppError("Doctor and Appointment date are required",404);
-    }
-    
-    //finding doctor
-    const doctor=await Doctor.findById(doctorId); 
-    if(!doctor){
-        throw new AppError("Doctor not Found",404);
+    if (!doctorId || !appointmentDateTime) {
+        throw new AppError("Doctor and appointment date are required.", 400);
     }
 
-    //Doctor approved?
-    if(doctor.status !== 'approved'){
-        throw new AppError("Doctor is not available for booking",400)
+    const doctor = await Doctor.findById(doctorId);
+    if (!doctor) {
+        throw new AppError("Doctor not found.", 404);
     }
 
-    //accepting appointments?
-    if(!doctor.isAvailable){
-        throw new AppError('Doctor is currently unavailable',400)
+    if (doctor.status !== "approved") {
+        throw new AppError("Doctor is not available for booking.", 400);
     }
 
-    //checking working day
-    const appointmentDay = getDayName(appointmentDateTime);
-    const schedule = doctor.availability.find((item)=>item.day===appointmentDay);
-    if(!schedule){
-        throw new AppError("Doctor is not Available on this day.",400)
+    if (!doctor.isAvailable) {
+        throw new AppError("Doctor is currently unavailable.", 400);
     }
 
-
-    //checking working Hours
-
-    const appointmentMinutes= getAppointmentMinutes(appointmentDateTime)
-    const startMinutes=convertToMinutes(schedule.startTime)
-    const endMinutes=convertToMinutes(schedule.endTime)
-
-    if(appointmentMinutes < startMinutes ||  appointmentMinutes >=endMinutes){
-        throw new AppError("Doctor is unavailable at this time.", 400)
+    const day = getDayName(appointmentDateTime);
+    const availability = doctor.availability.find((item) => item.day === day);
+    if (!availability) {
+        throw new AppError("Doctor is not available on this day.", 400);
     }
 
-
-    //break time
-
-    if(schedule.breakStart && schedule.breakEnd){
-        const breakStart = convertToMinutes(schedule.breakStart)
-        const breakEnd= convertToMinutes(schedule.breakEnd)
-
-        if(appointmentMinutes >= breakStart && appointmentMinutes < breakEnd){
-            throw new AppError('Doctor is on break during this time',404)
-        }
-    }
-
-    //exact slot already booked?
-
-    const existingAppointment = await Appointment.findOne({doctor:doctor._id,appointmentDateTime:new Date(appointmentDateTime),status:{$in:['pending','confirmed']}})
-
-    if(exisitingAppointment){
-        throw new AppError("This appointment slot is already Booked",409)
-    }
-
-    //overlapping appointment
-
-    const appointmentStart = new Date(appointmentDateTime);
-    const appointmentEnd= new Date(appointmentStart);
-
-    appointmentEnd.setMinutes(appointmentEnd.getMinutes()+doctor.slotDuration)
-
-    const overlappingAppointment = await Appointment.findOne({
-        doctor:doctor._id,
-        status:{$in:['pending','confirmed']},
-        appointmentDateTime:{
-            $lt:appointmentEnd,
-            $gte: new Date(appointmentStart.getTime()-doctor.slotDuration *6000)
-        }
-    })
-    if(overlappingAppointment){
-        throw new AppError("Appointment overlaps with another booking",409)
-    }
-
-
-    //create appointments
-
-    const appointment = await Appointment.create({
-
-        patient: patientId,
-
-        doctor: doctor._id,
-
-        appointmentDateTime,
-
-        duration: doctor.slotDuration,
-
-        consultationFee: doctor.consultationFee,
-
-        consultationType,
-
-        notes,
-
+    const startTime = new Date(appointmentDateTime).toLocaleTimeString("en-GB", {
+        hour: "2-digit",
+        minute: "2-digit",
+        hour12: false,
     });
 
+    const endTime = calculateAppointmentEndTime(startTime, doctor.slotDuration);
+
+    if (
+        !isTimeWithinWorkingHours(
+            startTime,
+            endTime,
+            availability.startTime,
+            availability.endTime
+        )
+    ) {
+        throw new AppError("Selected time is outside doctor's working hours.", 400);
+    }
+
+    if (
+        availability.breakStart &&
+        availability.breakEnd &&
+        hasTimeOverlap(startTime, endTime, availability.breakStart, availability.breakEnd)
+    ) {
+        throw new AppError("Doctor is on break during this time.", 400);
+    }
+
+    // Check for overlapping existing appointments for this doctor
+    const startOfDay = new Date(appointmentDateTime);
+    startOfDay.setHours(0, 0, 0, 0);
+
+    const endOfDay = new Date(appointmentDateTime);
+    endOfDay.setHours(23, 59, 59, 999);
+
+    const existingAppointments = await Appointment.find({
+        doctor: doctor._id,
+        appointmentDateTime: {
+            $gte: startOfDay,
+            $lte: endOfDay,
+        },
+        status: {
+            $nin: ["cancelled", "rejected"],
+        },
+    });
+
+    for (const existing of existingAppointments) {
+        const existingStart = new Date(existing.appointmentDateTime);
+        const existingEnd = new Date(
+            existingStart.getTime() + (existing.duration || doctor.slotDuration) * 60 * 1000
+        );
+
+        const existingStartTime = existingStart.toLocaleTimeString("en-GB", {
+            hour: "2-digit",
+            minute: "2-digit",
+            hour12: false,
+        });
+
+        const existingEndTime = existingEnd.toLocaleTimeString("en-GB", {
+            hour: "2-digit",
+            minute: "2-digit",
+            hour12: false,
+        });
+
+        if (hasTimeOverlap(startTime, endTime, existingStartTime, existingEndTime)) {
+            throw new AppError("This appointment slot is already booked.", 409);
+        }
+    }
+
+    const appointment = await Appointment.create({
+        patient: patientId,
+        doctor: doctor._id,
+        appointmentDateTime,
+        duration: doctor.slotDuration,
+        consultationType,
+        consultationFee: doctor.consultationFee,
+        notes,
+    });
 
     await appointment.populate([
         {
             path: "patient",
-            select: "fullName email",
+            select: "fullName email avatar",
         },
         {
             path: "doctor",
+            select: "specialization consultationFee hospital clinicalAddress",
             populate: {
                 path: "user",
-                select: "fullName email",
-            },
-        },
-    ]);
-    return appointment
-}
-
-
-
-
-export const getMyAppointments = async (patientId,query)=>{
-    const {page=1,limit=10,status,}=query;
-    const filter = {patient:patientId}
-    if(status){
-        filter.status = status
-    }
-    const pageNumber= Number(page)
-    const limitNumber= Number(limit)
-    const skip = (pageNumber - 1)*limitNumber;
-    const totalAppointments = await Appointment.countDocuments(filter);
-    const appointments= await Appointment.find(filter).populate({
-        path:"doctor",
-        populate:{
-            path:"user",
-            select:"fullName email"
-        }
-    }).sort({appointmentDateTime:-1}).skip(skip).limit(limitNumber);
-    return {
-    appointments,
-    totalAppointments,
-    currentPage: pageNumber,
-    totalPages: Math.ceil(totalAppointments / limitNumber),
-};
-}
-
-
-
-
-//fetching only logged in user appointment
-
-export const getAppointmentById=async(appointmentId,patientId)=>{
-    const appointment= await Appointment.findById(appointmentId).populate({
-        path:"patient",
-        select:"fullName email"
-    }).populate({
-        path:"doctor",
-        populate:{
-            path:"user",
-            select:"fullName email"
-        }
-    })
-    if(!appointment){
-        throw new AppError("Appointment not found",404)
-    }
-    //checking ownership
-    if(appointment.patient._id.toString()!==patientId.toString()){
-        throw new AppError("no appointment found for you yet",404)
-    }
-    return appointment
-}
-
-
-export const cancelAppointment=async(appointmentId,patientId,reason)=>{
-    const appointment = await Appointment.findById(appointmentId);
-    if(!appointmentId){
-        throw new AppError("Appointment not found",404)
-    }
-    //checking ownership of appointment
-    if(appointment.patient._id.toString() !==patientId.toString()){
-        throw new AppError("Appointment not found",404)
-    }
-
-    //cannot cancel completed appointment
-    if(appointment.status === APPOINTMENT_STATUS.COMPLETED){
-        throw new AppError("Completed Appointment cannot be cancelled",400)
-    } 
-
-    // Already cancelled
-    if (appointment.status === APPOINTMENT_STATUS.CANCELLED) {
-        throw new AppError("Appointment is already cancelled",400);
-    }
-
-     // Rejected appointment
-    if (appointment.status === APPOINTMENT_STATUS.REJECTED) {
-        throw new AppError("Rejected appointment cannot be cancelled",400);
-    }
-
-    // Appointment already started
-    if (new Date() >= appointment.appointmentDateTime) {
-        throw new AppError("Appointment has already started",400);
-    }
-
-    appointment.status = APPOINTMENT_STATUS.CANCELLED;
-
-     if (reason) {
-        appointment.cancellationReason = reason;
-    }
-    await appointment.save();
-    await appointment.populate([
-        {
-            path: "patient",
-            select: "fullName email",
-        },
-        {
-            path: "doctor",
-            populate: {
-                path: "user",
-                select: "fullName email",
+                select: "fullName email avatar",
             },
         },
     ]);
 
     return appointment;
-}
+};
 
+// 2. Get Logged-in Patient Appointments
+export const getMyAppointments = async (patientId, query = {}) => {
+    const { page = 1, limit = 20, status } = query || {};
+    const filter = { patient: patientId };
 
+    if (status && status !== "all") {
+        filter.status = status;
+    }
 
-export const getDoctorAppointments= async(userId,query)=>{
+    const pageNumber = Number(page);
+    const limitNumber = Number(limit);
+    const skip = (pageNumber - 1) * limitNumber;
+
+    const totalAppointments = await Appointment.countDocuments(filter);
+
+    const appointments = await Appointment.find(filter)
+        .populate({
+            path: "doctor",
+            select: "specialization consultationFee hospital clinicalAddress profileImage",
+            populate: {
+                path: "user",
+                select: "fullName email avatar",
+            },
+        })
+        .sort({ appointmentDateTime: -1 })
+        .skip(skip)
+        .limit(limitNumber);
+
+    return {
+        appointments,
+        totalAppointments,
+        currentPage: pageNumber,
+        totalPages: Math.ceil(totalAppointments / limitNumber),
+    };
+};
+
+// 3. Get Appointment By ID
+export const getAppointmentById = async (appointmentId, userId) => {
+    const appointment = await Appointment.findById(appointmentId)
+        .populate({
+            path: "patient",
+            select: "fullName email avatar phone gender",
+        })
+        .populate({
+            path: "doctor",
+            select: "specialization consultationFee hospital clinicalAddress profileImage",
+            populate: {
+                path: "user",
+                select: "fullName email avatar",
+            },
+        });
+
+    if (!appointment) {
+        throw new AppError("Appointment not found.", 404);
+    }
+
+    const doctor = await Doctor.findOne({ user: userId });
+    const isPatient = appointment.patient._id.toString() === userId.toString();
+    const isDoctor = doctor && appointment.doctor._id.toString() === doctor._id.toString();
+
+    if (!isPatient && !isDoctor) {
+        throw new AppError("Unauthorized access to appointment.", 403);
+    }
+
+    return appointment;
+};
+
+// 4. Cancel Appointment (Patient)
+export const cancelAppointment = async (appointmentId, patientId, reason) => {
+    const appointment = await Appointment.findById(appointmentId);
+
+    if (!appointment) {
+        throw new AppError("Appointment not found.", 404);
+    }
+
+    if (appointment.patient.toString() !== patientId.toString()) {
+        throw new AppError("Unauthorized access to appointment.", 403);
+    }
+
+    if (appointment.status === APPOINTMENT_STATUS.COMPLETED) {
+        throw new AppError("Completed appointments cannot be cancelled.", 400);
+    }
+
+    if (appointment.status === APPOINTMENT_STATUS.CANCELLED) {
+        throw new AppError("Appointment is already cancelled.", 400);
+    }
+
+    if (appointment.status === APPOINTMENT_STATUS.REJECTED) {
+        throw new AppError("Rejected appointments cannot be cancelled.", 400);
+    }
+
+    appointment.status = APPOINTMENT_STATUS.CANCELLED;
+    if (reason) {
+        appointment.cancellationReason = reason;
+    }
+
+    await appointment.save();
+
+    await appointment.populate([
+        {
+            path: "patient",
+            select: "fullName email avatar",
+        },
+        {
+            path: "doctor",
+            select: "specialization consultationFee hospital clinicalAddress",
+            populate: {
+                path: "user",
+                select: "fullName email avatar",
+            },
+        },
+    ]);
+
+    return appointment;
+};
+
+// 5. Get Doctor Appointments (Doctor Portal)
+export const getDoctorAppointments = async (userId, query = {}) => {
     const doctor = await Doctor.findOne({ user: userId });
     if (!doctor) {
-        throw new AppError("Doctor profile not found", 404);
+        throw new AppError("Doctor profile not found.", 404);
     }
-    const {page = 1,limit = 10,status,consultationType,date,} = query;
-    const filter = {doctor: doctor._id,};
-    if (status) {
-        filter.status = status
+
+    const { page = 1, limit = 20, status, consultationType, date } = query || {};
+    const filter = { doctor: doctor._id };
+
+    if (status && status !== "all") {
+        filter.status = status;
     }
+
     if (consultationType) {
         filter.consultationType = consultationType;
     }
 
     if (date) {
-
         const start = new Date(date);
         start.setHours(0, 0, 0, 0);
 
@@ -262,6 +281,7 @@ export const getDoctorAppointments= async(userId,query)=>{
             $lte: end,
         };
     }
+
     const pageNumber = Number(page);
     const limitNumber = Number(limit);
     const skip = (pageNumber - 1) * limitNumber;
@@ -271,143 +291,136 @@ export const getDoctorAppointments= async(userId,query)=>{
     const appointments = await Appointment.find(filter)
         .populate({
             path: "patient",
-            select: "fullName email",
+            select: "fullName email avatar phone",
         })
-        .sort({
-            appointmentDateTime: 1,
-        })
+        .sort({ appointmentDateTime: -1 })
         .skip(skip)
         .limit(limitNumber);
-     return {
+
+    return {
         appointments,
         totalAppointments,
         currentPage: pageNumber,
         totalPages: Math.ceil(totalAppointments / limitNumber),
     };
-}
+};
 
-export const confirmAppointment= async (userId,appointmentId)=>{
-    const doctor = await Doctor.findOne({user:userId});
-    if(!doctor){
-        throw new AppError("Doctor Profile not found",404);
-    }
-
-    const appointment = await Appointment.findById(appointmentId)
-    .populate('patient','fullName email')
-    .populate({
-        path:"doctor",
-        populate:{
-            path:"user",
-            select:"fullName email"
-        }
-    })
-    if(!appointment){
-        throw new AppError("Appointment not found",404)
-    }
-    console.log("Doctor from token:", doctor._id.toString());
-console.log("Doctor in appointment:", appointment.doctor._id.toString());
-    if(appointment.doctor._id.toString() !== doctor._id.toString()){
-        throw new AppError("Unauthorized",403);
-    }
-    if(appointment.status !== "pending"){
-        throw new AppError("Only pending appointments can be confirmed",400)
-    }
-    appointment.status = "confirmed";
-    await appointment.save()
-    return appointment;
-}
-
-export const rejectAppointment = async (userId,appointmentId,reason)=>{
-    const doctor = await Doctor.findOne({user:userId})
-    if(!doctor){
-        throw new AppError("Doctor profile not Found",404)
-    }
-    const appointment = await Appointment.findById(appointmentId);
-    if(!appointment){
-         throw new AppError("Appointment not found", 404);
-    }
-    if (appointment.doctor.toString() !== doctor._id.toString()) {
-        throw new AppError("Unauthorized", 403);
-    }
-    if (appointment.status !== "pending") {
-        throw new AppError(
-            "Only pending appointments can be rejected",
-            400
-        );
-    }
-    appointment.status = "rejected";
-    appointment.cancellationReason = reason;
-    await appointment.save();
-    return appointment;
-}
-export const completeAppointment = async (userId,appointmentId) => {
-
+// 6. Confirm Appointment (Doctor)
+export const confirmAppointment = async (userId, appointmentId) => {
     const doctor = await Doctor.findOne({ user: userId });
-
     if (!doctor) {
-        throw new AppError("Doctor profile not found", 404);
+        throw new AppError("Doctor profile not found.", 404);
     }
 
-    const appointment = await Appointment.findById(appointmentId);
+    const appointment = await Appointment.findById(appointmentId).populate({
+        path: "patient",
+        select: "fullName email avatar",
+    });
 
     if (!appointment) {
-        throw new AppError("Appointment not found", 404);
+        throw new AppError("Appointment not found.", 404);
     }
 
     if (appointment.doctor.toString() !== doctor._id.toString()) {
-        throw new AppError("Unauthorized", 403);
+        throw new AppError("Unauthorized.", 403);
     }
 
-    if (appointment.status !== "confirmed") {
-        throw new AppError(
-            "Only confirmed appointments can be completed",
-            400
-        );
+    if (appointment.status !== APPOINTMENT_STATUS.PENDING) {
+        throw new AppError("Only pending appointments can be confirmed.", 400);
     }
 
-    appointment.status = "completed";
-
+    appointment.status = APPOINTMENT_STATUS.CONFIRMED;
     await appointment.save();
 
     return appointment;
 };
 
-
-export const rescheduleAppointment = async (userId,appointmentId,data) => {
-
+// 7. Reject Appointment (Doctor)
+export const rejectAppointment = async (userId, appointmentId, reason) => {
     const doctor = await Doctor.findOne({ user: userId });
-
     if (!doctor) {
-        throw new AppError("Doctor profile not found", 404);
+        throw new AppError("Doctor profile not found.", 404);
     }
 
-    const appointment = await Appointment.findById(appointmentId);
+    const appointment = await Appointment.findById(appointmentId).populate({
+        path: "patient",
+        select: "fullName email avatar",
+    });
 
     if (!appointment) {
-        throw new AppError("Appointment not found", 404);
+        throw new AppError("Appointment not found.", 404);
     }
 
     if (appointment.doctor.toString() !== doctor._id.toString()) {
-        throw new AppError("Unauthorized", 403);
+        throw new AppError("Unauthorized.", 403);
+    }
+
+    if (appointment.status !== APPOINTMENT_STATUS.PENDING) {
+        throw new AppError("Only pending appointments can be rejected.", 400);
+    }
+
+    appointment.status = APPOINTMENT_STATUS.REJECTED;
+    if (reason) {
+        appointment.cancellationReason = reason;
+    }
+    await appointment.save();
+
+    return appointment;
+};
+
+// 8. Complete Appointment (Doctor)
+export const completeAppointment = async (userId, appointmentId) => {
+    const doctor = await Doctor.findOne({ user: userId });
+    if (!doctor) {
+        throw new AppError("Doctor profile not found.", 404);
+    }
+
+    const appointment = await Appointment.findById(appointmentId).populate({
+        path: "patient",
+        select: "fullName email avatar",
+    });
+
+    if (!appointment) {
+        throw new AppError("Appointment not found.", 404);
+    }
+
+    if (appointment.doctor.toString() !== doctor._id.toString()) {
+        throw new AppError("Unauthorized.", 403);
+    }
+
+    if (appointment.status !== APPOINTMENT_STATUS.CONFIRMED) {
+        throw new AppError("Only confirmed appointments can be completed.", 400);
+    }
+
+    appointment.status = APPOINTMENT_STATUS.COMPLETED;
+    await appointment.save();
+
+    return appointment;
+};
+
+// 9. Reschedule Appointment (Doctor)
+export const rescheduleAppointment = async (userId, appointmentId, data) => {
+    const doctor = await Doctor.findOne({ user: userId });
+    if (!doctor) {
+        throw new AppError("Doctor profile not found.", 404);
+    }
+
+    const appointment = await Appointment.findById(appointmentId);
+    if (!appointment) {
+        throw new AppError("Appointment not found.", 404);
+    }
+
+    if (appointment.doctor.toString() !== doctor._id.toString()) {
+        throw new AppError("Unauthorized.", 403);
     }
 
     const { appointmentDateTime } = data;
-
-    await validateDoctorAvailability(
-        doctor,
-        appointmentDateTime
-    );
-
-    await validateAppointmentConflict(
-        doctor._id,
-        appointmentDateTime,
-        doctor.slotDuration,
-        appointment._id
-    );
+    if (!appointmentDateTime) {
+        throw new AppError("New appointment date and time is required.", 400);
+    }
 
     appointment.appointmentDateTime = appointmentDateTime;
     appointment.status = "rescheduled";
-
     await appointment.save();
 
     return appointment;

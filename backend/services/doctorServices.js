@@ -3,6 +3,8 @@ import User from "../models/User.js";
 import AppError from "../utils/AppError.js";
 import { ROLES } from "../constants/roles.js";
 import { generateAccessToken, generateRefreshToken } from "../utils/generateToken.js";
+import Appointment from "../models/Appointment.js";
+import { generateSlots, getDayName } from "../utils/appointment.js";
 
 export const registerDoctor = async ({ fullName, email, password }) => {
     const existingUser = await User.findOne({ email });
@@ -174,4 +176,78 @@ export const updateDoctorAvailability = async (userId, availability) => {
     doctor.availability = availability;
     await doctor.save();
     return doctor.availability;
+};
+
+export const getAvailableSlots = async (doctorId, date) => {
+    if (!date) {
+        throw new AppError("Date is required.", 400);
+    }
+
+    const doctor = await Doctor.findById(doctorId);
+    if (!doctor) {
+        throw new AppError("Doctor not found.", 404);
+    }
+
+    if (doctor.status !== "approved") {
+        throw new AppError("Doctor is not approved.", 400);
+    }
+
+    const day = getDayName(date);
+    const availability = doctor.availability.find((item) => item.day === day);
+
+    if (!availability) {
+        return {
+            day,
+            availableSlots: [],
+        };
+    }
+
+    const generatedSlots = generateSlots(availability, doctor.slotDuration);
+
+    const startOfDay = new Date(date);
+    startOfDay.setHours(0, 0, 0, 0);
+
+    const endOfDay = new Date(date);
+    endOfDay.setHours(23, 59, 59, 999);
+
+    const appointments = await Appointment.find({
+        doctor: doctor._id,
+        appointmentDateTime: {
+            $gte: startOfDay,
+            $lte: endOfDay,
+        },
+        status: {
+            $nin: ["cancelled"],
+        },
+    });
+
+    const bookedSlots = appointments.map((appointment) =>
+        new Date(appointment.appointmentDateTime).toLocaleTimeString("en-GB", {
+            hour: "2-digit",
+            minute: "2-digit",
+            hour12: false,
+        })
+    );
+
+    const now = new Date();
+    const isToday = new Date(date).toDateString() === now.toDateString();
+    const currentMinutes = now.getHours() * 60 + now.getMinutes();
+
+    const availableSlots = generatedSlots.filter((slot) => {
+        if (bookedSlots.includes(slot)) return false;
+
+        if (isToday) {
+            const [h, m] = slot.split(":").map(Number);
+            const slotMinutes = h * 60 + m;
+            if (slotMinutes <= currentMinutes) {
+                return false;
+            }
+        }
+        return true;
+    });
+
+    return {
+        day,
+        availableSlots,
+    };
 };

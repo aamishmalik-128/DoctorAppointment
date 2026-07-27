@@ -14,11 +14,14 @@ import RegisterDoctor from './Pages/auth/RegisterDoctor.jsx'
 import Profile from './Pages/patient/Profile.jsx'
 import EditProfile from './Pages/patient/EditProfile.jsx'
 import ChangePassword from './Pages/patient/ChangePassword.jsx'
+import MyAppointments from './Pages/patient/MyAppointments.jsx'
+import AppointmentDetails from './Pages/patient/AppointmentDetails.jsx'
 import DashboardLayout from './components/doctor/DashboardLayout.jsx'
 import DashboardHome from './Pages/doctor/DashboardHome.jsx'
 import DoctorProfile from './Pages/doctor/DoctorProfile.jsx'
 import DoctorEditProfile from './Pages/doctor/EditProfile.jsx'
 import Availability from './Pages/doctor/Availability.jsx'
+import DoctorAppointments from './Pages/doctor/MyAppointments.jsx'
 import Patients from './Pages/doctor/Patients.jsx'
 import Settings from './Pages/doctor/Settings.jsx'
 
@@ -84,6 +87,18 @@ const App = () => {
             path="/profile/change-password"
             element={<ChangePassword />}
           />
+          <Route
+            path="/my-appointments"
+            element={<MyAppointments />}
+          />
+          <Route
+            path="/appointments"
+            element={<MyAppointments />}
+          />
+          <Route
+            path="/appointments/:id"
+            element={<AppointmentDetails />}
+          />
         </Route>
 
         {/* Protected Doctor Routes (Patients strictly blocked) */}
@@ -93,6 +108,8 @@ const App = () => {
             <Route path='profile' element={<DoctorProfile />} />
             <Route path='profile/edit' element={<DoctorEditProfile />} />
             <Route path='availability' element={<Availability />} />
+            <Route path='appointments' element={<DoctorAppointments />} />
+            <Route path='appointments/:id' element={<AppointmentDetails />} />
             <Route path='patients' element={<Patients />} />
             <Route path='settings' element={<Settings />} />
           </Route>
