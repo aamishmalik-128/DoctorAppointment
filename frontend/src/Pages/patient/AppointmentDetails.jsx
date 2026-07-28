@@ -27,6 +27,8 @@ import {
     AlertCircle,
     Check,
     X,
+    CreditCard,
+    RefreshCw,
 } from "lucide-react";
 
 // Helper InfoRow component
@@ -76,6 +78,12 @@ const StatusBadge = ({ status }) => {
             return (
                 <span className="inline-flex items-center gap-1 rounded-full bg-emerald-100/90 px-3 py-1 text-xs font-bold text-emerald-800 border border-emerald-200">
                     <CheckCircle2 size={13} /> Paid
+                </span>
+            );
+        case "refunded":
+            return (
+                <span className="inline-flex items-center gap-1 rounded-full bg-purple-100/90 px-3 py-1 text-xs font-bold text-purple-800 border border-purple-200">
+                    <RefreshCw size={13} /> Refunded
                 </span>
             );
         case "cancelled":
@@ -400,6 +408,22 @@ const AppointmentDetails = () => {
                                     <p className="italic">"{appointment.cancellationReason}"</p>
                                 </div>
                             )}
+
+                            {appointment.paymentStatus === "refunded" && (
+                                <div className="rounded-2xl border border-purple-200 bg-purple-50/90 p-5 text-xs text-purple-900 space-y-2 text-left">
+                                    <p className="font-bold flex items-center gap-1.5 text-purple-800 text-sm">
+                                        <RefreshCw size={16} className="text-purple-600 animate-spin-slow" /> Automatic Refund Processed
+                                    </p>
+                                    <p className="text-purple-700 font-medium">
+                                        A full refund of <span className="font-extrabold text-purple-900">Rs. {appointment.refundAmount || appointment.consultationFee}</span> was automatically processed and credited back to your card.
+                                    </p>
+                                    {appointment.refundId && (
+                                        <p className="text-[11px] font-mono text-purple-600 bg-purple-100/60 px-2.5 py-1 rounded-md inline-block">
+                                            Refund ID: {appointment.refundId}
+                                        </p>
+                                    )}
+                                </div>
+                            )}
                         </div>
 
                         {/* Actions Card */}
@@ -438,6 +462,15 @@ const AppointmentDetails = () => {
                                 )}
 
                                 {/* Patient Controls */}
+                                {!isDoctorRole && (appointment.paymentStatus === "pending" || appointment.paymentStatus === "unpaid" || !appointment.paymentStatus) && appointment.status !== "cancelled" && appointment.status !== "rejected" && (
+                                    <button
+                                        onClick={() => navigate(`/payment/${appointment._id}`)}
+                                        className="flex items-center gap-1.5 px-6 py-3 rounded-xl text-xs font-bold text-white bg-gradient-to-r from-teal-600 to-emerald-600 hover:from-teal-700 hover:to-emerald-700 transition shadow-md shadow-teal-600/20 cursor-pointer"
+                                    >
+                                        <CreditCard size={16} /> Pay Now (Rs. {appointment.consultationFee})
+                                    </button>
+                                )}
+
                                 {!isDoctorRole && (appointment.status === "pending" || appointment.status === "confirmed") && (
                                     <button
                                         onClick={() => setCancelModalOpen(true)}

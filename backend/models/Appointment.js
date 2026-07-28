@@ -28,7 +28,7 @@ const appointmentSchema = new mongoose.Schema(
 
         consultationType: {
             type: String,
-            enum: ["clinic", "online"],
+            enum: ["clinic", "online", "in-person", "video"],
             default: "clinic",
         },
 
@@ -60,6 +60,33 @@ const appointmentSchema = new mongoose.Schema(
             trim: true,
             default: "",
         },
+        paymentIntentId: {
+            type: String,
+            default: "",
+        },
+
+        paidAt: {
+            type: Date,
+        },
+
+        paymentMethod: {
+            type: String,
+            default: "card",
+        },
+
+        refundId: {
+            type: String,
+            default: "",
+        },
+
+        refundedAt: {
+            type: Date,
+        },
+
+        refundAmount: {
+            type: Number,
+            default: 0,
+        }
     },
     {
         timestamps: true,

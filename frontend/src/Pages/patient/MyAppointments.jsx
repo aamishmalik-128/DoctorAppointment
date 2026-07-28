@@ -22,6 +22,8 @@ import {
     Search,
     ChevronRight,
     Eye,
+    CreditCard,
+    RefreshCw,
 } from "lucide-react";
 
 const StatCard = ({ title, value, icon }) => {
@@ -300,8 +302,18 @@ const MyAppointments = () => {
                                             </div>
                                         </div>
 
-                                        <div className="flex items-center gap-3 self-end sm:self-center">
+                                        <div className="flex items-center gap-2 self-end sm:self-center">
                                             {getStatusBadge(item.status)}
+                                            {item.paymentStatus === "refunded" && (
+                                                <span className="inline-flex items-center gap-1 rounded-full bg-purple-100/90 px-2 py-0.5 text-[11px] font-bold text-purple-800 border border-purple-200">
+                                                    <RefreshCw size={11} /> Refunded
+                                                </span>
+                                            )}
+                                            {item.paymentStatus === "paid" && (
+                                                <span className="inline-flex items-center gap-1 rounded-full bg-emerald-100/90 px-2 py-0.5 text-[11px] font-bold text-emerald-800 border border-emerald-200">
+                                                    <CheckCircle2 size={11} /> Paid
+                                                </span>
+                                            )}
                                         </div>
                                     </div>
 
@@ -344,6 +356,18 @@ const MyAppointments = () => {
                                         )}
 
                                         <div className="flex items-center gap-2 self-end sm:self-auto">
+                                            {(item.paymentStatus === "pending" || item.paymentStatus === "unpaid" || !item.paymentStatus) && item.status !== "cancelled" && item.status !== "rejected" && (
+                                                <button
+                                                    onClick={(e) => {
+                                                        e.stopPropagation();
+                                                        navigate(`/payment/${item._id}`);
+                                                    }}
+                                                    className="flex items-center gap-1 px-3 py-1.5 rounded-lg text-xs font-bold text-white bg-gradient-to-r from-teal-600 to-emerald-600 hover:from-teal-700 hover:to-emerald-700 transition cursor-pointer shadow-xs"
+                                                >
+                                                    <CreditCard size={13} /> Pay Now
+                                                </button>
+                                            )}
+
                                             {(item.status === "pending" || item.status === "confirmed") && (
                                                 <button
                                                     onClick={(e) => handleOpenCancelModal(e, item._id)}
@@ -382,8 +406,8 @@ const MyAppointments = () => {
                             </h3>
                         </div>
 
-                        <p className="text-xs text-slate-500">
-                            Are you sure you want to cancel this appointment? This action cannot be undone.
+                        <p className="text-xs text-slate-500 leading-relaxed">
+                            Are you sure you want to cancel this appointment? If you have already paid for this appointment, your payment will be automatically refunded back to your card.
                         </p>
 
                         <div className="space-y-1">

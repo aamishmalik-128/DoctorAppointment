@@ -11,6 +11,7 @@ import {
     hasTimeOverlap,
 } from "../utils/appointment.js";
 import { APPOINTMENT_STATUS } from "../constants/appointmentStatus.js";
+import { processRefund } from "./payment.services.js";
 
 // 1. Book an Appointment
 export const bookAppointment = async (patientId, appointmentData) => {
@@ -231,7 +232,11 @@ export const cancelAppointment = async (appointmentId, patientId, reason) => {
         appointment.cancellationReason = reason;
     }
 
-    await appointment.save();
+    if (appointment.paymentStatus === "paid") {
+        await processRefund(appointment);
+    } else {
+        await appointment.save();
+    }
 
     await appointment.populate([
         {
@@ -363,7 +368,12 @@ export const rejectAppointment = async (userId, appointmentId, reason) => {
     if (reason) {
         appointment.cancellationReason = reason;
     }
-    await appointment.save();
+
+    if (appointment.paymentStatus === "paid") {
+        await processRefund(appointment);
+    } else {
+        await appointment.save();
+    }
 
     return appointment;
 };

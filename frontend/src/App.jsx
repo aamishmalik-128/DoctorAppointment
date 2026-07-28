@@ -27,6 +27,7 @@ import MyAppointments from './Pages/patient/MyAppointments.jsx'
 import AppointmentDetails from './Pages/patient/AppointmentDetails.jsx'
 import MyPrescriptions from './Pages/patient/MyPrescriptions.jsx'
 import PrescriptionDetails from './Pages/patient/PrescriptionDetails.jsx'
+import Payment from './Pages/patient/Payment.jsx'
 
 // Doctor Pages
 import DashboardLayout from './components/doctor/DashboardLayout.jsx'
@@ -137,6 +138,10 @@ const App = () => {
           <Route
             path="/prescriptions/:id"
             element={<PrescriptionDetails />}
+          />
+          <Route
+            path="/payment/:appointmentId"
+            element={<Payment />}
           />
         </Route>
 
