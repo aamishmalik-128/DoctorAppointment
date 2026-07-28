@@ -1,3 +1,4 @@
+import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import {
     CalendarCheck,
@@ -8,6 +9,8 @@ import {
 } from "lucide-react";
 
 const HeroSection = () => {
+    const navigate = useNavigate();
+
     return (
         <section className="relative overflow-hidden bg-gradient-to-br from-slate-50 via-teal-50/60 to-emerald-50 py-16 lg:py-24 text-slate-800">
             {/* Medical Pattern Grid & Light Sea Green Ambient Orbs */}
@@ -44,12 +47,18 @@ const HeroSection = () => {
                     {/* Action Buttons */}
                     <div className="mt-8 flex flex-wrap items-center gap-4">
 
-                        <button className="inline-flex items-center justify-center gap-2.5 rounded-xl bg-gradient-to-r from-teal-600 to-emerald-600 px-7 py-3.5 text-sm font-semibold text-white shadow-lg shadow-teal-600/20 hover:from-teal-700 hover:to-emerald-700 transition-all duration-200 active:scale-[0.98] cursor-pointer">
+                        <button
+                            onClick={() => navigate("/doctors")}
+                            className="inline-flex items-center justify-center gap-2.5 rounded-xl bg-gradient-to-r from-teal-600 to-emerald-600 px-7 py-3.5 text-sm font-semibold text-white shadow-lg shadow-teal-600/20 hover:from-teal-700 hover:to-emerald-700 transition-all duration-200 active:scale-[0.98] cursor-pointer"
+                        >
                             Book Appointment
                             <ArrowRight size={18} />
                         </button>
 
-                        <button className="inline-flex items-center justify-center gap-2.5 rounded-xl bg-white px-7 py-3.5 text-sm font-semibold text-teal-700 border border-teal-200 hover:bg-teal-50 transition-all duration-200 active:scale-[0.98] shadow-sm cursor-pointer">
+                        <button
+                            onClick={() => navigate("/doctors")}
+                            className="inline-flex items-center justify-center gap-2.5 rounded-xl bg-white px-7 py-3.5 text-sm font-semibold text-teal-700 border border-teal-200 hover:bg-teal-50 transition-all duration-200 active:scale-[0.98] shadow-sm cursor-pointer"
+                        >
                             Explore Doctors
                         </button>
 

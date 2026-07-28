@@ -10,7 +10,7 @@ const router=express.Router();
 router.post('/register',registerValidation,authController.register)
 
 router.post('/login',loginValidation,authController.login)
- 
+
 router.post('/logout',authMiddleware,authController.logout)
 
 router.post('/refresh-token',authController.refreshAccessToken)
