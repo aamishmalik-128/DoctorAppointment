@@ -1,4 +1,4 @@
-import { useEffect } from "react";
+import { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
 import { getPrescriptionById } from "../../redux/feature/prescription/prescriptionThunk";
@@ -6,6 +6,7 @@ import { formatDoctorName } from "../../utils/formatDoctorName";
 import {
     ArrowLeft,
     Printer,
+    Download,
     Stethoscope,
     Building,
     MapPin,
@@ -26,6 +27,8 @@ const PrescriptionDetails = () => {
     const navigate = useNavigate();
     const dispatch = useDispatch();
 
+    const [downloading, setDownloading] = useState(false);
+
     const { prescription, loading, error } = useSelector(
         (state) => state.prescription || {}
     );
@@ -42,6 +45,28 @@ const PrescriptionDetails = () => {
 
     const handlePrint = () => {
         window.print();
+    };
+
+    const handleDownloadPDF = async () => {
+        const element = document.getElementById("prescription-document");
+        if (!element) return;
+        setDownloading(true);
+        try {
+            const html2pdfModule = (await import("html2pdf.js")).default;
+            const refId = prescription?._id?.slice(-8).toUpperCase() || "Rx";
+            const opt = {
+                margin: [0.3, 0.3, 0.3, 0.3],
+                filename: `CarePoint_Prescription_${refId}.pdf`,
+                image: { type: "jpeg", quality: 0.98 },
+                html2canvas: { scale: 2, useCORS: true, logging: false },
+                jsPDF: { unit: "in", format: "letter", orientation: "portrait" },
+            };
+            await html2pdfModule().set(opt).from(element).save();
+        } catch (err) {
+            console.error("PDF generation failed:", err);
+        } finally {
+            setDownloading(false);
+        }
     };
 
     const isDoctorRole = currentUser?.role === "doctor";
@@ -139,16 +164,37 @@ const PrescriptionDetails = () => {
                         )}
 
                         <button
-                            onClick={handlePrint}
-                            className="flex items-center gap-1.5 rounded-xl bg-gradient-to-r from-teal-600 to-emerald-600 px-4 py-2 text-xs font-bold text-white shadow-md hover:from-teal-700 hover:to-emerald-700 transition cursor-pointer"
+                            onClick={handleDownloadPDF}
+                            disabled={downloading}
+                            className="flex items-center gap-1.5 rounded-xl bg-gradient-to-r from-teal-600 to-emerald-600 px-4 py-2 text-xs font-bold text-white shadow-md hover:from-teal-700 hover:to-emerald-700 transition cursor-pointer disabled:opacity-60"
                         >
-                            <Printer size={15} /> Print / Save PDF
+                            {downloading ? (
+                                <>
+                                    <Loader2 size={15} className="animate-spin text-white" />
+                                    <span>Generating PDF...</span>
+                                </>
+                            ) : (
+                                <>
+                                    <Download size={15} />
+                                    <span>Download PDF</span>
+                                </>
+                            )}
+                        </button>
+
+                        <button
+                            onClick={handlePrint}
+                            className="flex items-center gap-1.5 rounded-xl border border-teal-200 bg-white/95 px-4 py-2 text-xs font-bold text-teal-800 hover:bg-teal-50 transition shadow-xs cursor-pointer"
+                        >
+                            <Printer size={15} /> Print
                         </button>
                     </div>
                 </div>
 
                 {/* Print-Ready Prescription Document Card */}
-                <div className="rounded-3xl border border-teal-100 bg-white/95 p-6 sm:p-10 shadow-2xl backdrop-blur-xl space-y-6 text-slate-800 print:shadow-none print:border-none print:p-0">
+                <div
+                    id="prescription-document"
+                    className="rounded-3xl border border-teal-100 bg-white p-6 sm:p-10 shadow-2xl space-y-6 text-slate-800 print:shadow-none print:border-none print:p-0"
+                >
 
                     {/* Official Rx Header */}
                     <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 border-b-2 border-teal-500/30 pb-6">

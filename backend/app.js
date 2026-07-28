@@ -13,7 +13,7 @@ import prescriptionRoutes from './routes/prescription.route.js'
 import profileRoutes from './routes/profile.routes.js'
 import paymentRoutes from './routes/payment.routes.js'
 import { paymentWebhook } from './controllers/payment.controller.js'
-
+import notificationRoutes from "./routes/notification.route.js";
 dotenv.config()
 
 const app = express()
@@ -47,7 +47,7 @@ app.use('/api/appointment', doctorAppointmentRoute);
 app.use("/api/prescriptions", prescriptionRoutes);
 app.use("/api/profile", profileRoutes);
 app.use("/api/payments", paymentRoutes);
-
+app.use("/api/notifications", notificationRoutes);
 app.use(errorHandler);
 
 export default app;

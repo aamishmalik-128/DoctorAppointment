@@ -80,12 +80,10 @@ const Availability = () => {
             ).unwrap();
 
             setStatusMsg("Doctor availability schedule updated successfully!");
-            setTimeout(() => setStatusMsg(""), 3000);
+            setTimeout(() => setStatusMsg(""), 4000);
         } catch (err) {
             console.error("Failed to save availability:", err);
         }
-        navigate('/')
-        
     };
 
     return (

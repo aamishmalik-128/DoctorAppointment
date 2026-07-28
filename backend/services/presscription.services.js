@@ -2,6 +2,7 @@ import Appointment from "../models/Appointment.js";
 import Doctor from "../models/Doctor.js";
 import Prescription from "../models/Prescription.js";
 import AppError from "../utils/AppError.js";
+import * as notificationService from "./notification.services.js";
 
 
 export const createPrescription =async(userId,prescriptionData)=>{
@@ -70,6 +71,19 @@ export const createPrescription =async(userId,prescriptionData)=>{
             },
         },
     ]);
+
+    // Send notification to Patient
+    try {
+        await notificationService.createNotification({
+            user: appointment.patient,
+            title: "Prescription Available",
+            message: "Your doctor has uploaded your prescription.",
+            type: "prescription",
+            referenceId: prescription._id,
+        });
+    } catch (notifErr) {
+        console.error("Notification creation error on createPrescription:", notifErr);
+    }
 
     return prescription;
 }

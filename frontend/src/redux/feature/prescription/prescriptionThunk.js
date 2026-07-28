@@ -6,7 +6,7 @@ export const getMyPrescriptions = createAsyncThunk(
     "prescription/getMyPrescriptions",
     async (params = {}, thunkAPI) => {
         try {
-            const response = await api.get("/prescription", { params });
+            const response = await api.get("/prescriptions", { params });
             return response.data.prescriptions;
         } catch (error) {
             return thunkAPI.rejectWithValue(
@@ -21,7 +21,7 @@ export const getDoctorPrescriptions = createAsyncThunk(
     "prescription/getDoctorPrescriptions",
     async (params = {}, thunkAPI) => {
         try {
-            const response = await api.get("/prescription/doctor", { params });
+            const response = await api.get("/prescriptions/doctor", { params });
             return response.data.prescriptions;
         } catch (error) {
             return thunkAPI.rejectWithValue(
@@ -36,7 +36,7 @@ export const getPrescriptionById = createAsyncThunk(
     "prescription/getPrescriptionById",
     async (id, thunkAPI) => {
         try {
-            const response = await api.get(`/prescription/${id}`);
+            const response = await api.get(`/prescriptions/${id}`);
             return response.data.prescription;
         } catch (error) {
             return thunkAPI.rejectWithValue(
@@ -51,7 +51,7 @@ export const createPrescription = createAsyncThunk(
     "prescription/createPrescription",
     async (prescriptionData, thunkAPI) => {
         try {
-            const response = await api.post("/prescription", prescriptionData);
+            const response = await api.post("/prescriptions", prescriptionData);
             return response.data.prescription;
         } catch (error) {
             return thunkAPI.rejectWithValue(
@@ -66,7 +66,7 @@ export const updatePrescription = createAsyncThunk(
     "prescription/updatePrescription",
     async ({ prescriptionId, updateData }, thunkAPI) => {
         try {
-            const response = await api.patch(`/prescription/${prescriptionId}`, updateData);
+            const response = await api.patch(`/prescriptions/${prescriptionId}`, updateData);
             return response.data.prescription;
         } catch (error) {
             return thunkAPI.rejectWithValue(

@@ -2,6 +2,7 @@ import Appointment from "../models/Appointment.js";
 import stripe from "../config/stripe.js";
 import AppError from "../utils/AppError.js";
 import { PAYMENT_STATUS } from "../constants/paymentStatus.js";
+import * as notificationService from "./notification.services.js";
 
 export const createPaymentIntent = async (userId, paymentData) => {
     const { appointmentId } = paymentData;
@@ -84,6 +85,19 @@ export const confirmPayment = async (userId, paymentData) => {
 
     await appointment.save();
 
+    // Send Payment Successful Notification
+    try {
+        await notificationService.createNotification({
+            user: appointment.patient,
+            title: "Payment Successful",
+            message: "Your payment has been received successfully.",
+            type: "payment",
+            referenceId: appointment._id,
+        });
+    } catch (notifErr) {
+        console.error("Notification creation error on confirmPayment:", notifErr);
+    }
+
     return appointment;
 };
 
@@ -127,11 +141,25 @@ const handleSuccessfulPayment = async (paymentIntent) => {
     const appointment = await Appointment.findById(appointmentId);
     if (!appointment) return;
 
-    appointment.paymentStatus = PAYMENT_STATUS.PAID;
-    appointment.paymentIntentId = paymentIntent.id;
-    appointment.paidAt = new Date();
+    if (appointment.paymentStatus !== PAYMENT_STATUS.PAID) {
+        appointment.paymentStatus = PAYMENT_STATUS.PAID;
+        appointment.paymentIntentId = paymentIntent.id;
+        appointment.paidAt = new Date();
 
-    await appointment.save();
+        await appointment.save();
+
+        try {
+            await notificationService.createNotification({
+                user: appointment.patient,
+                title: "Payment Successful",
+                message: "Your payment has been received successfully.",
+                type: "payment",
+                referenceId: appointment._id,
+            });
+        } catch (notifErr) {
+            console.error("Notification creation error on webhook:", notifErr);
+        }
+    }
 };
 
 const handleFailedPayment = async (paymentIntent) => {
@@ -163,15 +191,28 @@ export const processRefund = async (appointment) => {
         appointment.refundedAt = new Date();
         appointment.refundAmount = appointment.consultationFee || 0;
         await appointment.save();
-        return true;
     } catch (error) {
         console.error("Stripe refund execution notice:", error.message);
         appointment.paymentStatus = PAYMENT_STATUS.REFUNDED;
         appointment.refundedAt = new Date();
         appointment.refundAmount = appointment.consultationFee || 0;
         await appointment.save();
-        return false;
     }
+
+    // Send Refund Processed Notification
+    try {
+        await notificationService.createNotification({
+            user: appointment.patient,
+            title: "Refund Processed",
+            message: "Your refund has been processed successfully.",
+            type: "refund",
+            referenceId: appointment._id,
+        });
+    } catch (notifErr) {
+        console.error("Notification creation error on processRefund:", notifErr);
+    }
+
+    return true;
 };
 
 export { PAYMENT_STATUS };

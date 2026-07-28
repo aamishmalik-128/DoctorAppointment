@@ -4,8 +4,8 @@ import { useDispatch, useSelector } from "react-redux";
 import { Elements } from "@stripe/react-stripe-js";
 import stripePromise from "../../utils/stripe";
 import CheckoutForm from "../../components/payment/CheckoutForm";
-import { createPaymentIntent } from "../../redux/payment/paymentThunk";
-import { resetPaymentState } from "../../redux/payment/paymentSlice";
+import { createPaymentIntent } from "../../redux/feature/payment/paymentThunk";
+import { resetPaymentState } from "../../redux/feature/payment/paymentSlice";
 import api from "../../services/axios";
 import { formatDoctorName } from "../../utils/formatDoctorName";
 import {

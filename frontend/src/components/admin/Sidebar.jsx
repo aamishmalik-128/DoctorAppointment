@@ -87,7 +87,7 @@ const Sidebar = ({ isMobileOpen, onCloseMobile }) => {
                             <NavLink
                                 key={item.path}
                                 to={item.path}
-                                end={item.path === "/admin"}
+                                end
                                 onClick={() => onCloseMobile && onCloseMobile()}
                                 className={({ isActive }) =>
                                     `flex items-center gap-3 rounded-xl px-4 py-3 text-sm transition-all duration-200

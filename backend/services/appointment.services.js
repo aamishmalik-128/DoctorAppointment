@@ -12,8 +12,8 @@ import {
 } from "../utils/appointment.js";
 import { APPOINTMENT_STATUS } from "../constants/appointmentStatus.js";
 import { processRefund } from "./payment.services.js";
+import * as notificationService from "./notification.services.js";
 
-// 1. Book an Appointment
 export const bookAppointment = async (patientId, appointmentData) => {
     const { doctorId, appointmentDateTime, consultationType, notes } = appointmentData;
 
@@ -67,7 +67,6 @@ export const bookAppointment = async (patientId, appointmentData) => {
         throw new AppError("Doctor is on break during this time.", 400);
     }
 
-    // Check for overlapping existing appointments for this doctor
     const startOfDay = new Date(appointmentDateTime);
     startOfDay.setHours(0, 0, 0, 0);
 
@@ -133,10 +132,29 @@ export const bookAppointment = async (patientId, appointmentData) => {
         },
     ]);
 
+    try {
+        await notificationService.createNotification({
+            user: appointment.patient._id || appointment.patient,
+            title: "Appointment Booked",
+            message: "Your appointment has been booked successfully.",
+            type: "appointment",
+            referenceId: appointment._id,
+        });
+
+        await notificationService.createNotification({
+            user: doctor.user._id || doctor.user,
+            title: "New Appointment",
+            message: "A new appointment has been booked with you.",
+            type: "appointment",
+            referenceId: appointment._id,
+        });
+    } catch (notifErr) {
+        console.error("Notification creation error on bookAppointment:", notifErr);
+    }
+
     return appointment;
 };
 
-// 2. Get Logged-in Patient Appointments
 export const getMyAppointments = async (patientId, query = {}) => {
     const { page = 1, limit = 20, status } = query || {};
     const filter = { patient: patientId };
@@ -172,7 +190,6 @@ export const getMyAppointments = async (patientId, query = {}) => {
     };
 };
 
-// 3. Get Appointment By ID
 export const getAppointmentById = async (appointmentId, userId) => {
     const appointment = await Appointment.findById(appointmentId)
         .populate({
@@ -203,7 +220,6 @@ export const getAppointmentById = async (appointmentId, userId) => {
     return appointment;
 };
 
-// 4. Cancel Appointment (Patient)
 export const cancelAppointment = async (appointmentId, patientId, reason) => {
     const appointment = await Appointment.findById(appointmentId);
 
@@ -245,7 +261,7 @@ export const cancelAppointment = async (appointmentId, patientId, reason) => {
         },
         {
             path: "doctor",
-            select: "specialization consultationFee hospital clinicalAddress",
+            select: "user specialization consultationFee hospital clinicalAddress",
             populate: {
                 path: "user",
                 select: "fullName email avatar",
@@ -253,10 +269,24 @@ export const cancelAppointment = async (appointmentId, patientId, reason) => {
         },
     ]);
 
+    try {
+        const doctorObj = await Doctor.findById(appointment.doctor);
+        if (doctorObj && doctorObj.user) {
+            await notificationService.createNotification({
+                user: doctorObj.user._id || doctorObj.user,
+                title: "Appointment Cancelled",
+                message: "A patient has cancelled an appointment.",
+                type: "appointment",
+                referenceId: appointment._id,
+            });
+        }
+    } catch (notifErr) {
+        console.error("Notification creation error on cancelAppointment:", notifErr);
+    }
+
     return appointment;
 };
 
-// 5. Get Doctor Appointments (Doctor Portal)
 export const getDoctorAppointments = async (userId, query = {}) => {
     const doctor = await Doctor.findOne({ user: userId });
     if (!doctor) {
@@ -310,7 +340,6 @@ export const getDoctorAppointments = async (userId, query = {}) => {
     };
 };
 
-// 6. Confirm Appointment (Doctor)
 export const confirmAppointment = async (userId, appointmentId) => {
     const doctor = await Doctor.findOne({ user: userId });
     if (!doctor) {
@@ -337,10 +366,21 @@ export const confirmAppointment = async (userId, appointmentId) => {
     appointment.status = APPOINTMENT_STATUS.CONFIRMED;
     await appointment.save();
 
+    try {
+        await notificationService.createNotification({
+            user: appointment.patient._id || appointment.patient,
+            title: "Appointment Confirmed",
+            message: "Your appointment has been confirmed by the doctor.",
+            type: "appointment",
+            referenceId: appointment._id,
+        });
+    } catch (notifErr) {
+        console.error("Notification creation error on confirmAppointment:", notifErr);
+    }
+
     return appointment;
 };
 
-// 7. Reject Appointment (Doctor)
 export const rejectAppointment = async (userId, appointmentId, reason) => {
     const doctor = await Doctor.findOne({ user: userId });
     if (!doctor) {
@@ -375,10 +415,21 @@ export const rejectAppointment = async (userId, appointmentId, reason) => {
         await appointment.save();
     }
 
+    try {
+        await notificationService.createNotification({
+            user: appointment.patient._id || appointment.patient,
+            title: "Appointment Rejected",
+            message: "Unfortunately your appointment was rejected.",
+            type: "appointment",
+            referenceId: appointment._id,
+        });
+    } catch (notifErr) {
+        console.error("Notification creation error on rejectAppointment:", notifErr);
+    }
+
     return appointment;
 };
 
-// 8. Complete Appointment (Doctor)
 export const completeAppointment = async (userId, appointmentId) => {
     const doctor = await Doctor.findOne({ user: userId });
     if (!doctor) {
@@ -405,10 +456,21 @@ export const completeAppointment = async (userId, appointmentId) => {
     appointment.status = APPOINTMENT_STATUS.COMPLETED;
     await appointment.save();
 
+    try {
+        await notificationService.createNotification({
+            user: appointment.patient._id || appointment.patient,
+            title: "Appointment Completed",
+            message: "Your appointment has been marked as completed.",
+            type: "appointment",
+            referenceId: appointment._id,
+        });
+    } catch (notifErr) {
+        console.error("Notification creation error on completeAppointment:", notifErr);
+    }
+
     return appointment;
 };
 
-// 9. Reschedule Appointment (Doctor)
 export const rescheduleAppointment = async (userId, appointmentId, data) => {
     const doctor = await Doctor.findOne({ user: userId });
     if (!doctor) {
@@ -432,6 +494,18 @@ export const rescheduleAppointment = async (userId, appointmentId, data) => {
     appointment.appointmentDateTime = appointmentDateTime;
     appointment.status = "rescheduled";
     await appointment.save();
+
+    try {
+        await notificationService.createNotification({
+            user: appointment.patient._id || appointment.patient,
+            title: "Appointment Rescheduled",
+            message: "Your appointment has been rescheduled.",
+            type: "appointment",
+            referenceId: appointment._id,
+        });
+    } catch (notifErr) {
+        console.error("Notification creation error on rescheduleAppointment:", notifErr);
+    }
 
     return appointment;
 };

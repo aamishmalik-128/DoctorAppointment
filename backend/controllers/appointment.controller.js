@@ -1,6 +1,5 @@
 import * as appointmentService from "../services/appointment.services.js";
 
-// Book Appointment (Patient)
 export const bookAppointment = async (req, res, next) => {
     try {
         const appointment = await appointmentService.bookAppointment(req.user.id, req.body);
@@ -14,7 +13,6 @@ export const bookAppointment = async (req, res, next) => {
     }
 };
 
-// Get My Appointments (Patient)
 export const getMyAppointments = async (req, res, next) => {
     try {
         const result = await appointmentService.getMyAppointments(
@@ -30,7 +28,6 @@ export const getMyAppointments = async (req, res, next) => {
     }
 };
 
-// Get Appointment By ID
 export const getAppointmentById = async (req, res, next) => {
     try {
         const appointment = await appointmentService.getAppointmentById(req.params.id, req.user.id);
@@ -43,7 +40,6 @@ export const getAppointmentById = async (req, res, next) => {
     }
 };
 
-// Cancel Appointment (Patient)
 export const cancelAppointment = async (req, res, next) => {
     try {
         const appointment = await appointmentService.cancelAppointment(
@@ -61,7 +57,6 @@ export const cancelAppointment = async (req, res, next) => {
     }
 };
 
-// Get Doctor Appointments (Doctor Portal)
 export const getDoctorAppointments = async (req, res, next) => {
     try {
         const result = await appointmentService.getDoctorAppointments(
@@ -77,7 +72,6 @@ export const getDoctorAppointments = async (req, res, next) => {
     }
 };
 
-// Confirm Appointment (Doctor)
 export const confirmAppointment = async (req, res, next) => {
     try {
         const appointment = await appointmentService.confirmAppointment(
@@ -94,7 +88,6 @@ export const confirmAppointment = async (req, res, next) => {
     }
 };
 
-// Reject Appointment (Doctor)
 export const rejectAppointment = async (req, res, next) => {
     try {
         const appointment = await appointmentService.rejectAppointment(
@@ -112,7 +105,6 @@ export const rejectAppointment = async (req, res, next) => {
     }
 };
 
-// Complete Appointment (Doctor)
 export const completeAppointment = async (req, res, next) => {
     try {
         const appointment = await appointmentService.completeAppointment(
@@ -129,7 +121,6 @@ export const completeAppointment = async (req, res, next) => {
     }
 };
 
-// Reschedule Appointment (Doctor)
 export const rescheduleAppointment = async (req, res, next) => {
     try {
         const appointment = await appointmentService.rescheduleAppointment(

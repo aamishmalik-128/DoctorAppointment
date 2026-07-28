@@ -9,6 +9,8 @@ import {
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 
+import NotificationDropdown from "./NotificationDropdown";
+
 const UserDropdown = ({ user, handleLogout }) => {
     const [open, setOpen] = useState(false);
     const dropdownRef = useRef(null);
@@ -40,11 +42,8 @@ const UserDropdown = ({ user, handleLogout }) => {
             ref={dropdownRef}
             className="relative flex items-center gap-3"
         >
-            {/* Notification */}
-            <button className="relative rounded-xl p-2 text-slate-600 transition hover:bg-teal-50 hover:text-teal-700">
-                <Bell size={20} />
-                <span className="absolute right-1.5 top-1.5 h-2 w-2 rounded-full bg-teal-500 ring-2 ring-white" />
-            </button>
+            {/* SaaS Notification Bell & Dropdown */}
+            <NotificationDropdown />
 
             {/* Avatar button */}
             <button

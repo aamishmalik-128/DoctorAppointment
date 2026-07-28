@@ -1,6 +1,6 @@
 import React from "react";
 import { useSelector } from "react-redux";
-import { Menu, ShieldAlert, Bell } from "lucide-react";
+import NotificationDropdown from "../layout/NotificationDropdown";
 
 const Topbar = ({ onOpenMobileSidebar }) => {
     const { user } = useSelector((state) => state.auth || {});
@@ -23,10 +23,7 @@ const Topbar = ({ onOpenMobileSidebar }) => {
             </div>
 
             <div className="flex items-center gap-4">
-                <button className="relative rounded-xl p-2 text-slate-600 hover:bg-teal-50 hover:text-teal-700 transition cursor-pointer">
-                    <Bell size={18} />
-                    <span className="absolute right-1.5 top-1.5 h-2 w-2 rounded-full bg-teal-500 ring-2 ring-white" />
-                </button>
+                <NotificationDropdown />
 
                 <div className="flex items-center gap-3 border-l border-teal-100 pl-4">
                     {user?.avatar ? (

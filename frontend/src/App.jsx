@@ -28,6 +28,7 @@ import AppointmentDetails from './Pages/patient/AppointmentDetails.jsx'
 import MyPrescriptions from './Pages/patient/MyPrescriptions.jsx'
 import PrescriptionDetails from './Pages/patient/PrescriptionDetails.jsx'
 import Payment from './Pages/patient/Payment.jsx'
+import Notifications from './Pages/shared/Notifications.jsx'
 
 // Doctor Pages
 import DashboardLayout from './components/doctor/DashboardLayout.jsx'
@@ -171,6 +172,11 @@ const App = () => {
             <Route path='doctors' element={<AllDoctors />} />
             <Route path='users' element={<AllUsers />} />
           </Route>
+        </Route>
+
+        {/* Shared Authenticated Routes */}
+        <Route element={<ProtectedRoute allowedRoles={["patient", "doctor", "admin"]} />}>
+          <Route path="/notifications" element={<Notifications />} />
         </Route>
 
         {/* Fallback 404 Route */}

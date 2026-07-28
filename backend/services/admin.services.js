@@ -2,8 +2,8 @@ import { ROLES } from "../constants/roles.js";
 import Doctor from "../models/Doctor.js";
 import User from "../models/User.js";
 import AppError from "../utils/AppError.js";
+import * as notificationService from "./notification.services.js";
 
-// 1. Get Pending Doctors
 export const getPendingDoctors = async () => {
     const doctors = await Doctor.find({
         status: "pending",
@@ -15,7 +15,6 @@ export const getPendingDoctors = async () => {
     return doctors;
 };
 
-// 2. Approve Doctor
 export const approveDoctor = async (doctorId) => {
     const doctor = await Doctor.findById(doctorId);
     if (!doctor) {
@@ -30,10 +29,23 @@ export const approveDoctor = async (doctorId) => {
     doctor.status = "approved";
     await doctor.save();
     await doctor.populate("user", "fullName email");
+
+    try {
+        const userId = doctor.user._id || doctor.user;
+        await notificationService.createNotification({
+            user: userId,
+            title: "Doctor Approved",
+            message: "Congratulations! Your doctor account has been approved.",
+            type: "system",
+            referenceId: doctor._id,
+        });
+    } catch (notifErr) {
+        console.error("Notification creation error on approveDoctor:", notifErr);
+    }
+
     return doctor;
 };
 
-// 3. Reject Doctor
 export const rejectDoctor = async (doctorId) => {
     const doctor = await Doctor.findById(doctorId);
     if (!doctor) {
@@ -45,10 +57,23 @@ export const rejectDoctor = async (doctorId) => {
     doctor.status = "rejected";
     await doctor.save();
     await doctor.populate("user", "fullName email");
+
+    try {
+        const userId = doctor.user._id || doctor.user;
+        await notificationService.createNotification({
+            user: userId,
+            title: "Doctor Application Rejected",
+            message: "Your doctor profile has been rejected by the admin.",
+            type: "system",
+            referenceId: doctor._id,
+        });
+    } catch (notifErr) {
+        console.error("Notification creation error on rejectDoctor:", notifErr);
+    }
+
     return doctor;
 };
 
-// 4. Get All Doctors
 export const getAllDoctors = async (query = {}) => {
     const { page = 1, limit = 10, status, specialization, hospital } = query || {};
     const filter = {};
@@ -80,7 +105,6 @@ export const getAllDoctors = async (query = {}) => {
     };
 };
 
-// 5. Get All Users
 export const getAllUser = async (query = {}) => {
     const { page = 1, limit = 10, role, isBlocked } = query || {};
     const filter = {};
@@ -109,7 +133,6 @@ export const getAllUser = async (query = {}) => {
     };
 };
 
-// 6. Block User
 export const blockUser = async (currentUserId, targetUserId) => {
     if (currentUserId === targetUserId) {
         throw new AppError("You cannot block your own account", 400);
@@ -126,10 +149,22 @@ export const blockUser = async (currentUserId, targetUserId) => {
     }
     user.isBlocked = true;
     await user.save();
+
+    try {
+        await notificationService.createNotification({
+            user: user._id,
+            title: "Account Blocked",
+            message: "Your account has been blocked by the administrator.",
+            type: "system",
+            referenceId: user._id,
+        });
+    } catch (notifErr) {
+        console.error("Notification creation error on blockUser:", notifErr);
+    }
+
     return user;
 };
 
-// 7. Unblock User
 export const unblockUser = async (userId) => {
     const user = await User.findById(userId);
 
@@ -143,10 +178,22 @@ export const unblockUser = async (userId) => {
 
     user.isBlocked = false;
     await user.save();
+
+    try {
+        await notificationService.createNotification({
+            user: user._id,
+            title: "Account Reactivated",
+            message: "Your account has been reactivated.",
+            type: "system",
+            referenceId: user._id,
+        });
+    } catch (notifErr) {
+        console.error("Notification creation error on unblockUser:", notifErr);
+    }
+
     return user;
 };
 
-// 8. Get Dashboard Stats
 export const getDashboardStats = async () => {
     const [
         totalUsers,

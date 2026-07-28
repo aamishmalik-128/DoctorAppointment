@@ -5,7 +5,7 @@ import {
     useElements,
     useStripe,
 } from "@stripe/react-stripe-js";
-import { confirmPayment } from "../../redux/payment/paymentThunk";
+import { confirmPayment } from "../../redux/feature/payment/paymentThunk";
 import { Lock, ShieldCheck, AlertCircle, Loader2, CreditCard } from "lucide-react";
 
 const CheckoutForm = ({ appointmentId, consultationFee, onPaymentSuccess }) => {

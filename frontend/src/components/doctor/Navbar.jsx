@@ -1,7 +1,8 @@
-import { Bell, Sparkles, Menu, X } from "lucide-react";
+import { Sparkles, Menu, X } from "lucide-react";
 import { useLocation } from "react-router-dom";
 import { useSelector } from "react-redux";
 import { formatDoctorName } from "../../utils/formatDoctorName";
+import NotificationDropdown from "../layout/NotificationDropdown";
 
 const pageTitles = {
     "/doctor": "Dashboard",
@@ -38,11 +39,8 @@ const Navbar = ({ isMobileMenuOpen, onToggleMobileMenu }) => {
 
             <div className="flex items-center gap-3 sm:gap-4">
 
-                {/* Notifications Icon */}
-                <button className="relative rounded-xl border border-teal-200/60 bg-teal-50/50 p-2 text-teal-700 hover:bg-teal-100/70 transition cursor-pointer shadow-xs">
-                    <Bell size={18} />
-                    <span className="absolute top-1 right-1 h-2 w-2 rounded-full bg-teal-600 animate-pulse"></span>
-                </button>
+                {/* SaaS Notification Dropdown */}
+                <NotificationDropdown />
 
                 {/* Doctor User Badge */}
                 <div className="flex items-center gap-2.5 sm:gap-3 border-l border-teal-100 pl-3 sm:pl-4">
