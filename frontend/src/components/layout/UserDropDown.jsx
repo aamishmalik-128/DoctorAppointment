@@ -5,6 +5,7 @@ import {
     User,
     Calendar,
     FileText,
+    MessageSquare,
     LogOut,
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
@@ -134,6 +135,17 @@ const UserDropdown = ({ user, handleLogout }) => {
                     >
                         <FileText size={18} className="text-teal-600" />
                         My Prescriptions
+                    </button>
+
+                    <button
+                        onClick={() => {
+                            navigate(isDoctor ? "/doctor/chat" : "/chat");
+                            setOpen(false);
+                        }}
+                        className="flex w-full items-center gap-3 px-5 py-3 text-sm font-medium text-slate-700 transition hover:bg-teal-50 hover:text-teal-700 cursor-pointer"
+                    >
+                        <MessageSquare size={18} className="text-teal-600" />
+                        Messages & Chat
                     </button>
 
                     <button

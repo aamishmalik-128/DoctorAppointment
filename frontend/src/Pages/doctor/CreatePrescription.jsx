@@ -52,9 +52,9 @@ const CreatePrescription = () => {
         }
     }, [preselectedAppointmentId]);
 
-    // Filter completed appointments
-    const completedAppointments = Array.isArray(appointments)
-        ? appointments.filter((a) => a.status === "completed")
+    // Filter eligible appointments for prescription (confirmed or completed)
+    const eligibleAppointments = Array.isArray(appointments)
+        ? appointments.filter((a) => a.status === "confirmed" || a.status === "completed")
         : [];
 
     const handleAddMedication = () => {
@@ -183,7 +183,7 @@ const CreatePrescription = () => {
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-xs">
                         <div className="space-y-1.5">
                             <label className="font-bold text-slate-700">
-                                Select Completed Appointment *
+                                Select Patient Appointment *
                             </label>
                             <select
                                 value={appointmentId}
@@ -192,21 +192,21 @@ const CreatePrescription = () => {
                                 className="w-full rounded-xl border border-teal-100 bg-teal-50/20 p-3 text-xs text-slate-800 outline-none focus:border-teal-500 focus:bg-white transition shadow-xs cursor-pointer font-medium"
                             >
                                 <option value="">-- Choose Patient Appointment --</option>
-                                {completedAppointments.map((apt) => {
+                                {eligibleAppointments.map((apt) => {
                                     const patientName = apt?.patient?.fullName || apt?.patient?.name || "Patient";
                                     const dateStr = apt?.appointmentDateTime
                                         ? new Date(apt.appointmentDateTime).toLocaleDateString()
                                         : "";
                                     return (
                                         <option key={apt._id} value={apt._id}>
-                                            {patientName} ({dateStr})
+                                            {patientName} ({dateStr}) [{apt.status.toUpperCase()}]
                                         </option>
                                     );
                                 })}
                             </select>
-                            {completedAppointments.length === 0 && (
+                            {eligibleAppointments.length === 0 && (
                                 <p className="text-[11px] text-amber-600 italic">
-                                    Note: Prescriptions can only be created for completed appointments.
+                                    Note: Prescriptions can be created for confirmed or completed appointments.
                                 </p>
                             )}
                         </div>

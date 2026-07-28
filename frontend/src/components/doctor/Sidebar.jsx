@@ -7,6 +7,7 @@ import {
     ClipboardList,
     FileText,
     Users,
+    MessageSquare,
     Settings,
     LogOut,
     Stethoscope,
@@ -39,6 +40,11 @@ const menuItems = [
         name: "Prescriptions",
         icon: FileText,
         path: "/doctor/prescriptions",
+    },
+    {
+        name: "Messages",
+        icon: MessageSquare,
+        path: "/doctor/chat",
     },
     {
         name: "Patients",

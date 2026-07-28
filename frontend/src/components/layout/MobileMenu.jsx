@@ -1,6 +1,6 @@
 import { Link } from "react-router-dom";
 import { AnimatePresence, motion } from "framer-motion";
-import { User, LogOut, ChevronRight } from "lucide-react";
+import { User, Calendar, MessageSquare, FileText, LogOut, ChevronRight } from "lucide-react";
 
 const MobileMenu = ({
     isOpen,
@@ -11,6 +11,8 @@ const MobileMenu = ({
     handleLogout,
 }) => {
     if (!isOpen) return null;
+
+    const isDoctorRole = user?.role === "doctor";
 
     return (
         <AnimatePresence>
@@ -23,7 +25,7 @@ const MobileMenu = ({
                 {/* Profile Card Header */}
                 {isAuthenticated && (
                     <Link
-                        to="/profile"
+                        to={isDoctorRole ? "/doctor/profile" : "/profile"}
                         onClick={() => setIsOpen(false)}
                         className="mb-6 flex items-center justify-between rounded-2xl border border-teal-100 bg-teal-50/50 p-4 transition hover:border-teal-300 hover:bg-teal-50 group shadow-sm"
                     >
@@ -73,16 +75,47 @@ const MobileMenu = ({
                         </Link>
                     ))}
 
-                    {/* Explicit My Profile Link for Mobile */}
+                    {/* Authenticated User Quick Links */}
                     {isAuthenticated && (
-                        <Link
-                            to="/profile"
-                            onClick={() => setIsOpen(false)}
-                            className="flex items-center gap-3 rounded-xl px-4 py-3 text-sm font-semibold text-teal-700 transition hover:bg-teal-50"
-                        >
-                            <User size={18} />
-                            My Profile
-                        </Link>
+                        <>
+                            <div className="my-2 border-t border-slate-100" />
+
+                            <Link
+                                to={isDoctorRole ? "/doctor/profile" : "/profile"}
+                                onClick={() => setIsOpen(false)}
+                                className="flex items-center gap-3 rounded-xl px-4 py-3 text-sm font-semibold text-slate-700 transition hover:bg-teal-50 hover:text-teal-700"
+                            >
+                                <User size={18} className="text-teal-600" />
+                                My Profile
+                            </Link>
+
+                            <Link
+                                to={isDoctorRole ? "/doctor/appointments" : "/my-appointments"}
+                                onClick={() => setIsOpen(false)}
+                                className="flex items-center gap-3 rounded-xl px-4 py-3 text-sm font-semibold text-slate-700 transition hover:bg-teal-50 hover:text-teal-700"
+                            >
+                                <Calendar size={18} className="text-teal-600" />
+                                My Appointments
+                            </Link>
+
+                            <Link
+                                to={isDoctorRole ? "/doctor/chat" : "/chat"}
+                                onClick={() => setIsOpen(false)}
+                                className="flex items-center gap-3 rounded-xl px-4 py-3 text-sm font-semibold text-slate-700 transition hover:bg-teal-50 hover:text-teal-700"
+                            >
+                                <MessageSquare size={18} className="text-teal-600" />
+                                Messages & Chat
+                            </Link>
+
+                            <Link
+                                to={isDoctorRole ? "/doctor/prescriptions" : "/my-prescriptions"}
+                                onClick={() => setIsOpen(false)}
+                                className="flex items-center gap-3 rounded-xl px-4 py-3 text-sm font-semibold text-slate-700 transition hover:bg-teal-50 hover:text-teal-700"
+                            >
+                                <FileText size={18} className="text-teal-600" />
+                                My Prescriptions
+                            </Link>
+                        </>
                     )}
                 </div>
 

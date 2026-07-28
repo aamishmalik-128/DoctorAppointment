@@ -5,7 +5,9 @@ import appointmentReducer from "./feature/appointment/appointmentSlice.js";
 import prescriptionReducer from "./feature/prescription/prescriptionSlice.js";
 import adminReducer from "./feature/admin/adminSlice.js";
 import paymentReducer from "./feature/payment/paymentSlice.js";
-import notificationReducer from "./feature/notification/notificationSlice";
+import notificationReducer from "./feature/notification/notificationSlice.js";
+import chatReducer from "./feature/chat/chatSlice.js";
+
 const store = configureStore({
     reducer: {
         auth: authReducer,
@@ -15,6 +17,7 @@ const store = configureStore({
         admin: adminReducer,
         payment: paymentReducer,
         notification: notificationReducer,
+        chat: chatReducer,
     },
 });
 

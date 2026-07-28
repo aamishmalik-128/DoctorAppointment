@@ -20,6 +20,7 @@ import {
     AlertCircle,
     Loader2,
     FileText,
+    MessageSquare,
 } from "lucide-react";
 
 const DoctorDetail = () => {
@@ -239,6 +240,15 @@ const DoctorDetail = () => {
                                 <p className="text-[10px] font-bold uppercase text-slate-400 mb-1">About Doctor</p>
                                 <p className="text-slate-600 font-medium leading-relaxed italic">{bio}</p>
                             </div>
+
+                            {/* Direct Chat Action Button */}
+                            <button
+                                onClick={() => navigate(`/chat?doctorId=${selectedDoctor._id}`)}
+                                className="w-full flex items-center justify-center gap-2 rounded-2xl border border-teal-200 bg-teal-50/70 hover:bg-teal-100 py-3 text-xs font-bold text-teal-800 transition shadow-xs cursor-pointer"
+                            >
+                                <MessageSquare size={16} />
+                                <span>Chat with Doctor</span>
+                            </button>
                         </div>
                     </div>
 

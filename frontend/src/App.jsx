@@ -8,7 +8,7 @@ import About from './Pages/public/About.jsx'
 import Contact from './Pages/public/Contact.jsx'
 import NotFound from './Pages/public/NotFound.jsx'
 
-import { useDispatch } from 'react-redux'
+import { useDispatch,useSelector } from 'react-redux'
 import { useEffect } from 'react'
 import Navbar from './components/layout/Navbar.jsx'
 import Login from './Pages/auth/Login.jsx'
@@ -29,6 +29,7 @@ import MyPrescriptions from './Pages/patient/MyPrescriptions.jsx'
 import PrescriptionDetails from './Pages/patient/PrescriptionDetails.jsx'
 import Payment from './Pages/patient/Payment.jsx'
 import Notifications from './Pages/shared/Notifications.jsx'
+import Chat from './Pages/shared/Chat.jsx'
 
 // Doctor Pages
 import DashboardLayout from './components/doctor/DashboardLayout.jsx'
@@ -49,10 +50,12 @@ import AdminDashboardHome from './Pages/admin/DashboardHome.jsx'
 import PendingDoctors from './Pages/admin/PendingDoctors.jsx'
 import AllDoctors from './Pages/admin/AllDoctors.jsx'
 import AllUsers from './Pages/admin/AllUsers.jsx'
-
+import socket from "./socket/socket";
 const App = () => {
   const dispatch = useDispatch()
-
+   const { isAuthenticated, user } = useSelector(
+        state => state.auth
+    );
   useEffect(() => {
     const initializeAuth = async () => {
       try {
@@ -64,6 +67,24 @@ const App = () => {
 
     initializeAuth();
   }, [dispatch]);
+   useEffect(() => {
+
+        if (isAuthenticated && user) {
+
+            socket.connect();
+
+            socket.emit("join", {
+                userId: user.id,
+            });
+
+        }
+         return () => {
+
+            socket.disconnect();
+
+        };
+
+    }, [isAuthenticated, user]);
 
   return (
     <BrowserRouter>
@@ -144,6 +165,10 @@ const App = () => {
             path="/payment/:appointmentId"
             element={<Payment />}
           />
+          <Route
+            path="/chat"
+            element={<Chat />}
+          />
         </Route>
 
         {/* Protected Doctor Routes (Patients & Admins strictly blocked) */}
@@ -160,6 +185,7 @@ const App = () => {
             <Route path='prescriptions/:id' element={<PrescriptionDetails />} />
             <Route path='prescriptions/:id/edit' element={<EditPrescription />} />
             <Route path='patients' element={<Patients />} />
+            <Route path='chat' element={<Chat />} />
             <Route path='settings' element={<Settings />} />
           </Route>
         </Route>

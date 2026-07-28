@@ -29,6 +29,7 @@ import {
     X,
     CreditCard,
     RefreshCw,
+    MessageSquare,
 } from "lucide-react";
 
 // Helper InfoRow component
@@ -316,6 +317,14 @@ const AppointmentDetails = () => {
                                     </p>
                                 </div>
                             </div>
+
+                            <button
+                                onClick={() => navigate(isDoctorRole ? `/doctor/chat` : `/chat?doctorId=${doctor._id}`)}
+                                className="w-full mt-2 flex items-center justify-center gap-2 rounded-xl border border-teal-200 bg-teal-50 hover:bg-teal-100 py-2.5 text-xs font-bold text-teal-800 transition shadow-xs cursor-pointer"
+                            >
+                                <MessageSquare size={15} />
+                                <span>{isDoctorRole ? "Chat with Patient" : "Message Doctor"}</span>
+                            </button>
                         </div>
                     </div>
 

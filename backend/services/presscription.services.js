@@ -29,10 +29,10 @@ export const createPrescription =async(userId,prescriptionData)=>{
         );
     }
 
-    // Appointment must be completed
-    if (appointment.status !== "completed") {
+    // Appointment must be confirmed or completed
+    if (appointment.status !== "confirmed" && appointment.status !== "completed") {
         throw new AppError(
-            "Prescription can only be created after appointment completion",
+            "Prescription can only be created for confirmed or completed appointments",
             400
         );
     }
@@ -45,7 +45,7 @@ export const createPrescription =async(userId,prescriptionData)=>{
             400
         );
     }
-     const prescription = await Prescription.create({
+    const prescription = await Prescription.create({
         appointment: appointment._id,
         doctor: doctor._id,
         patient: appointment.patient,
@@ -53,8 +53,14 @@ export const createPrescription =async(userId,prescriptionData)=>{
         medications,
         tests,
         advice,
-        followUpDate,
+        followUpDate: finalFollowUp,
     });
+
+    // Auto-mark appointment as completed when prescription is created
+    if (appointment.status === "confirmed") {
+        appointment.status = "completed";
+        await appointment.save();
+    }
     await prescription.populate([
         {
             path: "appointment",
